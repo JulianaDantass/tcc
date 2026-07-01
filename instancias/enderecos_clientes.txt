@@ -144,11 +144,8 @@ Rua José Severino Massa Spinelli, 847, João Pessoa, Paraíba, Brazil
 Rua José Severino Massa Spinelli, 831, João Pessoa, Paraíba, Brazil
 Rua José Severino Massa Spinelli, 249, João Pessoa, Paraíba, Brazil
 Rua José Severino Massa Spinelli, 101, João Pessoa, Paraíba, Brazil
-Avenida Rui Barbosa, 1028, João Pessoa, Paraíba, Brazil
 Avenida Rui Barbosa, 1010, João Pessoa, Paraíba, Brazil
-Avenida Rui Barbosa, 997, João Pessoa, Paraíba, Brazil
 Avenida Rui Barbosa, 1008, João Pessoa, Paraíba, Brazil
-Avenida Rui Barbosa, 1009, João Pessoa, Paraíba, Brazil
 Avenida Geminiano da França, 71, João Pessoa, Paraíba, Brazil
 Avenida Geminiano da França, 81, João Pessoa, Paraíba, Brazil
 Avenida Geminiano da França, 91, João Pessoa, Paraíba, Brazil
@@ -225,83 +222,49 @@ Rua Desembargador Pedro Batista da Silva, 12, João Pessoa, Paraíba, Brazil
 Rua Caturité, 1102, João Pessoa, Paraíba, Brazil
 Rua Caturité, 1138, João Pessoa, Paraíba, Brazil
 Rua Caturité, 1228, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1382, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1380, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1403, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1410, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1424, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1430, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1440, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1452, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1458, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1464, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1466, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1480, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1481, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1477, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1472, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1327, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1454, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1399, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1343, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1390, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1393, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1385, João Pessoa, Paraíba, Brazil
-Rua Beatriz Maria do Espirito Santo, 1381, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3000, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3379, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3335, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3319, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3297, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3255, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3189, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3181, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3171, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3165, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3157, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3149, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3131, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3125, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3117, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3107, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3099, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3077, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3263, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3004, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3050, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3013, João Pessoa, Paraíba, Brazil
-Rua Feliciano Dourado, 3007, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 10, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 11, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 56, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 936, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 957, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 960, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 962, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 965, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1680, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1620, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1608, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1604, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1590, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 157, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1558, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 1556, João Pessoa, Paraíba, Brazil
-Avenida Juarez Távora, 170, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2227, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2381, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2391, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2410, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2439, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2467, João Pessoa, Paraíba, Brazil
-Avenida Adolfo Cime, 2581, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 972, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 939, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 971, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 969, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 940, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 968, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 945, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 970, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 970, João Pessoa, Paraíba, Brazil
-Avenida Dom Pedro II, 963, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1403, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1424, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1430, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1458, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1464, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1480, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1481, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1327, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1399, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1393, João Pessoa, Paraíba, Brazil
+Rua Feliciano Dourado, 1381, João Pessoa, Paraíba, Brazil
+Avenida Juarez Távora, 3000, João Pessoa, Paraíba, Brazil
+Avenida Juarez Távora, 3319, João Pessoa, Paraíba, Brazil
+Avenida Juarez Távora, 3107, João Pessoa, Paraíba, Brazil
+Avenida Juarez Távora, 3099, João Pessoa, Paraíba, Brazil
+Avenida Juarez Távora, 3077, João Pessoa, Paraíba, Brazil
+Avenida Juarez Távora, 3004, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 10, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 11, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 56, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 936, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 957, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 960, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 962, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 965, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1680, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1620, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1608, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1604, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1590, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 157, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1558, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 1556, João Pessoa, Paraíba, Brazil
+Avenida Adolfo Cime, 170, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 972, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 939, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 971, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 969, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 940, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 968, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 945, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 970, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 970, João Pessoa, Paraíba, Brazil
+Rua Agostinho Figueiredo, 963, João Pessoa, Paraíba, Brazil
+Rua João Nobre, 457, João Pessoa, Paraíba, Brazil
+Rua João Nobre, 328, João Pessoa, Paraíba, Brazil

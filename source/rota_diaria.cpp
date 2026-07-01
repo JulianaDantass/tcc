@@ -19,7 +19,7 @@ Rotas_diarias::Rotas_diarias(int n_agentes){
         Rota r;
         r.id_rota = contador_id;
         contador_id++;
-        //todos começam no posto de saude (nó 0)
+        //todos começam e terminam no posto de saude (nó 0)
         r.sequencia.push_back(0);
         r.qtd_pacientes_am = 0;
 
@@ -37,7 +37,46 @@ Rotas_diarias::Rotas_diarias(int n_agentes){
     }
 } 
 
-int Rotas_diarias::adicionar_visita(Paciente &p, int &agente, double &deslocamento, double &t_volta_posto) {
+//a posição pertence a [1,n-1] sendo n o tamanho da rota
+int Rotas_diarias::adicionar_visita(Paciente &p, int &agente, double &custo_distancia, int posicao){
+    
+    //retorno q significa que o agente encerrou o dia
+    if(turno[agente] == 3){
+        return 3; 
+    }
+
+    double custo_total = custo_distancia + p.get_duracao();
+
+    //estamos adicionando na manhã
+    if(posicao <= rotas[agente].qtd_pacientes_am+1){
+        
+        int retorno = visita_possivel(agente, custo_total);
+        if(retorno == 0){
+            rotas[agente].qtd_pacientes_am += 1;
+            rotas[agente].tempo_am += custo_total;
+        }else{
+            return retorno;
+        }
+             
+
+    //estamos adicionando na tarde
+    }else{
+        
+        int retorno = visita_possivel(agente, custo_total);
+        if(retorno == 0){
+            rotas[agente].tempo_am += custo_total; 
+        }else{
+            return retorno;
+        }
+    }
+
+    rotas[agente].tempo_total += custo_total;
+    rotas[agente].sequencia.insert(rotas[agente].sequencia.begin() + posicao, p);
+    return 0;
+}
+
+
+int Rotas_diarias::adicionar_visita_fim(Paciente &p, int &agente, double &deslocamento, double &t_volta_posto) {
     
     double t_chegada;
  
@@ -45,25 +84,10 @@ int Rotas_diarias::adicionar_visita(Paciente &p, int &agente, double &deslocamen
     if(turno[agente] == 3){
         return 3; 
     }
-    
-    //se o ultimo nó for 0, significa que veio do posto
-    if (rotas[agente].sequencia.back().id == 0){
-        
-        if(turno[agente] == 1){
-            t_chegada = INICIO_AM+deslocamento;
-
-        }else if(turno[agente] == 2){
-            t_chegada = INICIO_PM+deslocamento;
-        } 
-        
-    //nao veio do posto ent pega o horario de termino da ultima visita
-    }else{
-        t_chegada = (rotas[agente].sequencia.back().get_t_termino_visita()) + deslocamento;   
-    }
 
     //ve se é possivel visitar e voltar pro posto
-    
-    int eh_impossivel = visita_possivel(agente, t_chegada, t_volta_posto, p.get_duracao());
+    double custo_total = deslocamento+p.get_duracao();
+    int eh_impossivel = visita_possivel(agente, custo_total);
 
     //se não é possivel, tem retorno 1 ou 2
     if(eh_impossivel == 1 or eh_impossivel == 2){
@@ -71,34 +95,29 @@ int Rotas_diarias::adicionar_visita(Paciente &p, int &agente, double &deslocamen
     }else{
 
         //somando o tempo gasto
-        rotas[agente].tempo_total += deslocamento + p.get_duracao(); 
+        rotas[agente].tempo_total += custo_total; 
 
-        //colocando o horario de chegada e o de saída da casa do paciente
-        double t_termino = t_chegada+ p.get_duracao();
-        p.set_inicio_visita(t_chegada);
-        p.set_termino_visita(t_termino);
         //colocando o paciente na rota
         rotas[agente].sequencia.push_back(p);
 
         if(turno[agente] == 1){
             rotas[agente].qtd_pacientes_am += 1;
-            rotas[agente].tempo_am += deslocamento + p.get_duracao();
+            rotas[agente].tempo_am += custo_total;
+            
 
         }else if(turno[agente] == 2){
-            rotas[agente].tempo_pm += deslocamento + p.get_duracao();
+            rotas[agente].tempo_pm += custo_total;
         } 
 
         return 0;
     } 
 }
 
-int Rotas_diarias::visita_possivel(int agente, double h_chegada_agente, double tempo_volta_posto, double duracao){
+int Rotas_diarias::visita_possivel(int agente, double custo_total){
 
     if(turno[agente] == 1){
                
-        if(h_chegada_agente+duracao+tempo_volta_posto > FIM_AM){
-
-            troca_turno(agente, tempo_volta_posto);
+        if(tempo_disponivel_am(agente) < custo_total){
             return 1; 
         }else{
             return 0;
@@ -106,9 +125,7 @@ int Rotas_diarias::visita_possivel(int agente, double h_chegada_agente, double t
     }
 
     if(turno[agente]  == 2){
-        if(h_chegada_agente+duracao+tempo_volta_posto > FIM_PM){
-
-            troca_turno(agente, tempo_volta_posto);
+        if(tempo_disponivel_pm(agente) < custo_total){
             return 2;
         }else{
             return 0;
@@ -161,7 +178,6 @@ double Rotas_diarias::get_tempo_total_dia(){
     double t_total_dia = 0;
 
     for(int i = 0; i < rotas.size(); i++){
-
         t_total_dia += rotas[i].tempo_total;
     }
 
@@ -178,16 +194,16 @@ double Rotas_diarias::tempo_disponivel_pm(int ag){
     return double(MAX_HORAS_PM) - rotas[ag].tempo_pm; 
 }
 
-void Rotas_diarias::finaliza_rota(int ag, double valor){
+void Rotas_diarias::finaliza_turno(int ag, double c_volta_posto){
     
-    rotas[ag].tempo_total += valor; 
+    rotas[ag].tempo_total += c_volta_posto; 
     rotas[ag].sequencia.push_back(0);
 
      if(turno[ag] == 1){
-        rotas[ag].tempo_am += valor;
+        rotas[ag].tempo_am += c_volta_posto;
 
     }else if(turno[ag] == 2){
-        rotas[ag].tempo_pm += valor;
+        rotas[ag].tempo_pm += c_volta_posto;
     } 
 }
 

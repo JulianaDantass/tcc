@@ -7,16 +7,12 @@ nos_aproximados = []
 
 with open('coordenadas.txt', 'r') as arquivo:
     for linha in arquivo:
-        # Remove o \n e espaços em branco das pontas
         linha_limpa = linha.strip()
         
-        # Verifica se a linha está completamente vazia
         if linha_limpa == "":
-            # Encontrou a quebra! Muda o estado da flag e pula para a próxima linha
             lendo_primeira_variavel = False
             continue
             
-        # Dependendo do estado da flag, salva na lista correspondente
         if lendo_primeira_variavel:
             nos_originais.append(linha_limpa)
         else:
@@ -27,18 +23,11 @@ lons_nos_originais = []
 lats_nos_originais = []
 
 for linha_texto in nos_originais:
-    # 1. Limpa parênteses caso eles tenham sido salvos no TXT
+    
     texto_limpo = linha_texto.replace('(', '').replace(')', '')
-    
-    # 2. Divide a string onde tem vírgula
-    # Exemplo: "-7.1150, -34.8630" vira a lista ["-7.1150", " -34.8630"]
     partes = texto_limpo.split(',')
-    
-    # 3. Converte os textos para números decimais (float)
     lat = float(partes[0])
     lon = float(partes[1])
-    
-    # 4. Adiciona nas listas corretas
     lats_nos_originais.append(lat)
     lons_nos_originais.append(lon)
 
@@ -53,7 +42,8 @@ mapa_interativo = folium.Map(location=[centro_lat, centro_lon], zoom_start=15)
 # 3. Criar a "camada" de Cluster e adicioná-la ao mapa
 cluster = MarkerCluster(
     name="Casas dos Pacientes",
-    maxClusterRadius=30  
+    maxClusterRadius=30,
+    
 ).add_to(mapa_interativo)
 
 # 4. Loop pelas 307 coordenadas usando zip() para ler as duas listas ao mesmo tempo
@@ -70,8 +60,6 @@ for lat, lon in zip(lats_nos_originais, lons_nos_originais):
         popup=f"Coordenada: {lat}, {lon}" # Ao clicar na bolinha, mostra o texto
     ).add_to(cluster)
 
-    
-
 # 5. Salvar o arquivo
 mapa_interativo.save("mapa_cluster_torre.html")
-print("Mapa salvo! Vá na pasta do seu projeto e dê um duplo clique no arquivo 'mapa_cluster_torre.html' para abrir no navegador.")
+print("Mapa salvo!")

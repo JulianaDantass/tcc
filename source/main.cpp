@@ -13,7 +13,6 @@ int main(int argc, char** argv){
     
     if(argc < 2){
         printf("Comando: ./'nome do executavel' instancias/'nome da instancia'\n");
-
         return 0;
 
     }else if(argc >= 2){

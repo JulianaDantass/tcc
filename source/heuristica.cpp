@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include <fstream>
+#include <random>
 
 using namespace std;
 
@@ -26,8 +27,8 @@ Heuristica::Heuristica(Instancia* dados_atuais){
 	movimentos.set_dados(dados_atuais);
 
 }
-
 // o vizinho mais próximo é utilizado como guloso
+/*
 Solucao Heuristica::solucao_inicial(){
 
 	Solucao si(QTD_DIAS_PLANEJAMENTO);
@@ -235,6 +236,130 @@ Solucao Heuristica::solucao_inicial(){
 	//si.exibe_solucao();
 	return si;
 }
+*/
+Solucao Heuristica::solucao_inicial(){
+
+	Solucao si(QTD_DIAS_PLANEJAMENTO);
+
+	// Cria um vetor com N elementos, preenchendo todos eles com uma cópia de Rotas_diarias(NUMERO_AGENTES)
+	std::vector<Rotas_diarias> dias(QTD_DIAS_PLANEJAMENTO, Rotas_diarias(NUMERO_AGENTES));
+	
+	//criando um vetor de booleano pra saber se o paciente já foi inserido
+	int tam_vetor = (dados->q_clientes);
+	std::vector<bool> pacientes_inseridos(tam_vetor, false);
+
+	int cont_dias = 0;
+	Rotas_diarias* dia = &(dias.at(cont_dias));
+	int cont_priori_servidos = 0;
+
+
+	//1.escolher 3 nós aleatórios
+	for (int agente = 0; agente < NUMERO_AGENTES; agente++){ 
+
+		double dist_volta_posto;
+		//estou colocando 3 aletaórios (dentre priori) para cada agente
+		for(int i = 0; i < 3; i++){
+
+			std::random_device rd;  
+			std::mt19937 gen(rd()); 
+			std::uniform_int_distribution<> distrib(0, (dados->clientes_prioritarios.size()-1));
+
+			int ind_sorteado = distrib(gen);
+			int cliente_sorteado = dados->clientes_prioritarios[ind_sorteado].id;
+
+			if(pacientes_inseridos[cliente_sorteado] == false){
+
+				int ult_loc = dia->ultimo_no_rota(agente);
+				dist_volta_posto = dados->matriz_distancias[cliente_sorteado][0];
+				double dis_ult_no = dados->matriz_distancias[ult_loc][cliente_sorteado];
+				int retorno = dia->adicionar_visita_fim(dados->clientes_prioritarios[ind_sorteado], agente, dis_ult_no, dist_volta_posto) ;
+
+				//descontando o id se o cliente foi servido
+				pacientes_inseridos[cliente_sorteado] = true;
+				cont_priori_servidos++;
+			}
+		}
+		dia->finaliza_turno(agente, dist_volta_posto);
+	}
+	
+	
+	//alocar o resto dos pacientes prioritários	
+	while(1){
+		//pra saber qtos prioritarios ja foram servidos
+		bool flag_priori_servidos = 0;
+		bool flag_dia_encerrado = 0;
+
+		//tem que calcular a distancia para cada possivel inserção 
+		for(int i = 0; i < NUMERO_AGENTES; i++){
+
+			const auto& rota = dia->rotas[i].sequencia;
+
+			if(cont_priori_servidos >= dados->clientes_prioritarios.size()){
+				flag_priori_servidos = 1;
+				break;
+			}
+			
+			if(dia->dia_encerrado()){
+				flag_dia_encerrado = 1;
+				break;
+			}
+			
+			int qtd_candidatos = dados->clientes_prioritarios.size() - cont_priori_servidos;
+			std::vector<InsercaoInfo> custo_insercao((rota.size() - 1)* qtd_candidatos);
+	 		int l = 0;
+
+			for(int j=1; j < rota.size(); j++) {
+				int no_i = rota[j-1].id;
+				int no_j = rota[j].id;
+
+				for (int k=0; k < dados->clientes_prioritarios.size(); k++) {
+					int no_k = dados->clientes_prioritarios[k].id;
+
+					if(!pacientes_inseridos[no_k]){
+						double custo = dados->matriz_distancias[no_i][no_k] + dados->matriz_distancias[no_j][no_k] - dados->matriz_distancias[no_i][no_j];
+						
+						if(dia->visita_possivel(i, custo) == 0){
+							custo_insercao[l].custo = custo;
+							custo_insercao[l].no_candidato = dados->clientes_prioritarios[k];
+							custo_insercao[l].aresta_removida = j-1;
+							l++;
+						}else{
+							int ult_no = dia->ultimo_no_rota(i);
+							dia->troca_turno(i, dados->matriz_distancias[ult_no][0]);
+						}
+						
+					}
+				}
+			}
+
+			std::sort(custo_insercao.begin(), custo_insercao.begin()+l, [](const InsercaoInfo& a, const InsercaoInfo& b) {
+				 return a.custo < b.custo; //ordem crescente pelo custo
+    		});
+
+			std::random_device rd;  
+    		std::mt19937 gerador(rd());
+			std::uniform_real_distribution<double> distribuicao(0.0, 1.0);
+    		double alfa = distribuicao(gerador);
+			int selecionado = rand() % ((int) ceil(alfa * custo_insercao.size()));  
+			dia->adicionar_visita(custo_insercao[selecionado].no_candidato, i, custo_insercao[selecionado].custo, custo_insercao[selecionado].aresta_removida);
+
+		}
+		
+		//o dia de todos os agentes encerrou
+		if(flag_dia_encerrado){
+			si.adiciona_dia(dias[cont_dias]);
+			cont_dias++;
+			dia = &(dias.at(cont_dias));
+			
+		}
+		//se todos os clientes prioritarios foram servidos 
+		if(flag_priori_servidos){
+			break;
+		}
+	}
+	
+
+}
 
 Solucao Heuristica::ILS_RVND(){
 	
@@ -270,7 +395,7 @@ Solucao Heuristica::ILS_RVND(){
 	}
 }
 
-void Heuristica::busca_intra_rota(Solucao s){
+void Heuristica::busca_intra_rota(Solucao &s){
 	
 	bool melhorou_intra;
    	vector<int> NLA;
@@ -287,8 +412,6 @@ void Heuristica::busca_intra_rota(Solucao s){
 			 
 			case 1:
 				//melhorou_intra = movimentos.intra_oropt2(s);
-				melhorou_intra = movimentos.intra_exchange(s);
-				//melhorou_intra = movimentos.intra_reinsertion(s);
 				break;
 			case 2:
 				//melhorou_intra = movimentos.intra_reinsertion(s);
@@ -348,26 +471,168 @@ Solucao Heuristica::RVND(Solucao &s){
             for(int i = 1; i <= QTD_VIZINHANCAS_INTER; i++){
 				NL.push_back(i);
 			}
+
 		//não melhorou
         } else {
 			NL.erase(NL.begin() + n);
         } 
-        
-        //UpdateADSs(s);
-        
+         //UpdateADSs(s);
     } 
-    
-    return s;
 }
 
-Solucao Heuristica::perturbacao(Solucao s){
+Solucao Heuristica::perturbacao(Solucao &s){
 	/*
-	Multiple-Shift(1,1) – P (2) moves are performed in sequence randomly. The Shift(1,1) consists in transferring a customer k from a route r1 to a
-								route r2 , whereas a customer l from r2 is transferred to r1 . In this case, the number of
-								moves is randomly selected from the interval {0.5v, 0.6v, . . . , 1.4v, 1.5v}. . This perturbation is more
-								stronger than the previous one since it admits a larger number of moves.
-								(v é o nº de veiculos)
+	Multiple-Swap(1,1)– 
 	*/
+
+    std::random_device rd;  
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<> distrib(5, 15);
+
+    int n_sorteado = distrib(gen);
+
+    double multiplicador = n_sorteado / 10.0;
+    int qtd_movimentos = multiplicador * NUMERO_AGENTES;
+	std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
+
+	for(int i=0; i < qtd_movimentos; i++){
+		//std::mt19937 gen(rd()); 
+		std::uniform_int_distribution<> distrib(0, dias.size()-1);
+		int ind_dia1 = distrib(gen);
+		int ind_dia2 = distrib(gen);
+
+		std::uniform_int_distribution<> distrib(0, dias[ind_dia1].rotas.size()-1);
+		int ind_rota1 = distrib(gen);
+		std::uniform_int_distribution<> distrib(0, dias[ind_dia2].rotas.size()-1);
+		int ind_rota2 = distrib(gen);
+
+		while(1){
+
+			//se forem rotas diferentes, entao vamos promover  troca 
+            if(dias[ind_dia1].rotas[ind_rota1].id_rota != dias[ind_dia2].rotas[ind_rota2].id_rota){ 
+                break;
+            }
+			//std::mt19937 gen(rd());
+			ind_rota2 = distrib(gen);
+		}
+
+		std::uniform_int_distribution<> distrib(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1);
+		int j = distrib(gen);
+		std::uniform_int_distribution<> distrib(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1);
+		int k = distrib(gen);
+		
+		while(1){
+			if(dias[ind_dia1].rotas[ind_rota1].sequencia[j].id != 0){
+				break;
+			}
+			std::uniform_int_distribution<> distrib(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1);
+			j = distrib(gen);
+		}
+
+		while(1){
+			if(dias[ind_dia2].rotas[ind_rota2].sequencia[k].id != 0){
+				break;
+			}
+			std::uniform_int_distribution<> distrib(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1);
+			k = distrib(gen);
+		}
+		
+		const auto& rota1 = dias[ind_dia1].rotas[ind_rota1].sequencia;
+		const auto& rota2 = dias[ind_dia2].rotas[ind_rota2].sequencia;
+		double necessario1;
+
+		while(1){	
+			necessario1 = 	+dados->matriz_distancias[rota1[j-1].id][rota2[k].id]
+							+dados->matriz_distancias[rota2[k].id][rota1[j+1].id] 
+							-dados->matriz_distancias[rota1[j-1].id][rota1[j].id] 
+							-dados->matriz_distancias[rota1[j].id][rota1[j+1].id];
+			
+			//o cliente está na tarde
+			if(j > dias[ind_dia1].rotas[ind_rota1].qtd_pacientes_am+1){
+
+				//disponivel é insuficiente
+				if(dias[ind_dia1].tempo_disponivel_pm(ind_rota1) < necessario1){    
+					std::uniform_int_distribution<> distrib(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1);
+					j = distrib(gen);
+				}else{
+					//disponivel é suficiente
+					break;
+				}
+
+			//o cliente tá na manhã
+			}else{
+
+				if(dias[ind_dia1].tempo_disponivel_am(ind_rota1) < necessario1){    
+					std::uniform_int_distribution<> distrib(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1);
+					j = distrib(gen);
+				}else{
+					//disponivel é suficiente
+					break;
+				}
+			}
+		}
+		double necessario2;
+
+		while(1){			
+			necessario2 = 	+dados->matriz_distancias[rota2[k-1].id][rota1[j].id]
+							+dados->matriz_distancias[rota1[j].id][rota2[k+2].id] 
+							-dados->matriz_distancias[rota2[k-1].id][rota2[k].id] 
+							-dados->matriz_distancias[rota2[k].id][rota2[k+1].id] ;
+			
+			//o cliente está na tarde
+			if(k > dias[ind_dia2].rotas[ind_rota2].qtd_pacientes_am+1){
+
+				//disponivel é insuficiente
+				if(dias[ind_dia2].tempo_disponivel_pm(ind_rota2) < necessario2){    
+					std::uniform_int_distribution<> distrib(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1);
+					k = distrib(gen);
+				}else{
+					//disponivel é suficiente
+					break;
+				}
+
+			//o cliente tá na manhã
+			}else{
+
+				if(dias[ind_dia2].tempo_disponivel_pm(ind_rota2) < necessario2){    
+					std::uniform_int_distribution<> distrib(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1);
+					k = distrib(gen);
+				}else{
+					//disponivel é suficiente
+					break;
+				}
+			}
+		}
+		
+		//efetivar o swap e alterar a fo
+		if(k > dias[ind_dia2].rotas[ind_rota2].qtd_pacientes_am){
+
+            dias[ind_dia2].rotas[ind_rota2].tempo_pm += necessario2;
+        
+        }else{ 
+            dias[ind_dia2].rotas[ind_rota2].tempo_am += necessario2;
+            dias[ind_dia2].rotas[ind_rota2].qtd_pacientes_am++;
+        }
+        dias[ind_dia2].rotas[ind_rota2].tempo_total += necessario2;
+
+
+        if(j > dias[ind_dia1].rotas[ind_rota1].qtd_pacientes_am){
+            
+            dias[ind_dia1].rotas[ind_rota1].tempo_pm += necessario1;
+        }else{
+
+            dias[ind_dia1].rotas[ind_rota1].tempo_am += necessario1;
+            dias[ind_dia1].rotas[ind_rota1].qtd_pacientes_am--;
+        }
+        dias[ind_dia1].rotas[ind_rota1].tempo_total += necessario1;
+        
+        s.set_fo(s.get_fo() + necessario1 + necessario2 - dias[ind_dia1].rotas[ind_rota1].sequencia[j].get_duracao() 
+														- dias[ind_dia2].rotas[ind_rota2].sequencia[k].get_duracao());
+		
+		std::swap(dias[ind_dia1].rotas[ind_rota1].sequencia[j], dias[ind_dia2].rotas[ind_rota2].sequencia[k]);
+
+		//fim do for
+	}
 }
 
 

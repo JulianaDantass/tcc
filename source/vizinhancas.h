@@ -25,13 +25,13 @@ class Vizinhancas{
     public:
         Vizinhancas();
         void set_dados(Instancia *d);
-        bool intra_reinsertion(Solucao &s); //tempo total não bate + seg fault
-        bool intra_oropt2(Solucao &s);      //seg fault
-        bool intra_exchange(Solucao &s);    //tempo total não bate
-        bool inter_shift10(Solucao &s);     //ok 
-        bool inter_swap11(Solucao &s);      //ok - tem q dar ultimo check
-        bool inter_swap22(Solucao &s);      //ok - tem q dar ultimo check
-
+        bool intra_reinsertion(Solucao &s); 
+        bool intra_oropt2(Solucao &s);      
+        bool intra_exchange(Solucao &s);    
+        bool inter_shift10(Solucao &s);     
+        bool inter_swap11(Solucao &s);      
+        bool inter_swap22(Solucao &s);      
+        
         //debug
         void confere(Rota &r);
 };
