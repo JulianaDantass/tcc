@@ -2,12 +2,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <climits>
+#include <limits>
 #include <vector>
 #include <algorithm> //Necessário para usar o std::replace
 #include <cstdlib>
 #include <ctime>
-
      
 Instancia::Instancia(){
     q_clientes = 0;
@@ -48,8 +47,7 @@ int Instancia::ler_instancia (string caminho){
         //se estivermos coletando a primeira linha, é a linha de pacientes prioritarios
         if(i == 0){                         
             while (ss >> valor_int) {
-                Paciente p(valor_int);
-                clientes_prioritarios.push_back(p);
+                clientes_prioritarios.push_back(valor_int);
             }
 
         //c.c. é uma linha da matriz que tem vários valores 
@@ -66,7 +64,7 @@ int Instancia::ler_instancia (string caminho){
 
         i++; 
     }
-    
+
     //definindo a qtd de clientes
     q_clientes = matriz_distancias.size();
 
@@ -75,19 +73,29 @@ int Instancia::ler_instancia (string caminho){
     for (int i = 1; i < matriz_distancias.size(); i++) {
 		int eh_priori = 0;
 		for(int j = 0; j < this->clientes_prioritarios.size(); j++){
-			if (i == this->clientes_prioritarios[j].id){
+			if (i == this->clientes_prioritarios[j]){
 				eh_priori = 1;
                 break;
 			}
 		}
 		if(eh_priori == 0){
-            Paciente p(i);
-			clientes_nao_prioritarios.push_back(p);
+			clientes_nao_prioritarios.push_back(i);
 		}
     }
-    
-    
-	
+
+
+    //matriz de debug
+    std::ofstream arquivo_saida("instancia_processada.txt");
+    if (arquivo_saida.is_open()) {
+
+        for(vector<double> v: matriz_distancias){
+            for(double valor : v) {
+                arquivo_saida << valor << " "; // Imprime o número e um espaço para separar as colunas
+            }
+            arquivo_saida << "\n";
+        }
+        arquivo.close();
+    }
     return 1;
 }
 
@@ -95,12 +103,12 @@ void Instancia::exibir(){
 
     cout << "exibindo lista de indices de clientes prioritarios:\n";
     for (int i = 0; i < this->clientes_prioritarios.size(); i++) {
-        std::cout << clientes_prioritarios[i].id << " ";
+        std::cout << clientes_prioritarios[i] << " ";
     }
 
     cout << "\nexibindo lista de indices de clientes n prioritarios:\n";
     for (int i = 0; i < this->clientes_nao_prioritarios.size(); i++) {
-        std::cout << clientes_nao_prioritarios[i].id << " ";
+        std::cout << clientes_nao_prioritarios[i] << " ";
     }
     cout<<endl;
     /*

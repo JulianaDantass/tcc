@@ -3,15 +3,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "paciente.h"
 
 struct Rota {
     int id_rota;
-    double tempo_total;
-    std::vector<Paciente> sequencia;
     int qtd_pacientes_am;
+    int qtd_pacientes_pm;
+    double tempo_total;
     double tempo_am;
     double tempo_pm;
+    std::vector<int> sequencia;
+
+    Rota(int id, int am, int pm, double t_t, double t_am, double t_pm, std::vector<int> s): id_rota(id), qtd_pacientes_am(am), qtd_pacientes_pm(pm), tempo_total(t_t), tempo_am(t_am), tempo_pm(t_pm), sequencia(s) {}
 };
 
 //representa 1 dia de trabalho de TODOS agentes
@@ -21,25 +23,24 @@ class Rotas_diarias{
         inline static int contador_id = 0;
         //turno[i] informa em qual turno o agente i esteve por ultimo: 1= manha, 2 = tarde, 3 = dia encerrado;
         std::vector<int> turno;            
-        
 
     public:
         Rotas_diarias(int i);
 
         //cada vetor representa a rota de um agente. logo, existem N vetores, sendo N a qtd de agentes;    
         std::vector<Rota> rotas;            
-        int adicionar_visita(Paciente &p, int &agente, double &dist, int posicao);
-        int adicionar_visita_fim(Paciente &paci, int &agente, double &distancia, double &volta_posto);  
+        int adicionar_visita(int &paci, int &agente, double &distancia, double &volta_posto);  
         int visita_possivel(int agente, double custo_total);
         int ultimo_no_rota(int ag);
         int dia_encerrado();
-
+        int get_turno(int a);
         double get_tempo_total_dia();
-        double tempo_disponivel_am(int ag);
-        double tempo_disponivel_pm(int ag);
 
+        double get_tempo_disponivel_am(int ag);
+        double get_tempo_disponivel_pm(int ag);
         void finaliza_turno(int ag, double valor);
-        void troca_turno(int ag, double dist_volta_posto);
-        void exibir_dia();
+        int troca_turno(int ag, double dist_volta_posto);
+        
+        void exibir_dia() const;
 };
 

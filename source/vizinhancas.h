@@ -21,9 +21,9 @@ Swap(2,2)— Permutation of two adjacent customers, k and l, from a router1 by a
 class Vizinhancas{    
     
     private:
-        Instancia *dados;
+        const Instancia *dados;
     public:
-        Vizinhancas();
+        Vizinhancas(const Instancia *d);
         void set_dados(Instancia *d);
         bool intra_reinsertion(Solucao &s); 
         bool intra_oropt2(Solucao &s);      
@@ -33,6 +33,6 @@ class Vizinhancas{
         bool inter_swap22(Solucao &s);      
         
         //debug
-        void confere(Rota &r);
+        void printa(Rota &r);
 };
 

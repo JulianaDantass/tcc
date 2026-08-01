@@ -14,8 +14,7 @@ OBJ=$(subst .cpp,.o,$(subst source,objetos,$(CPP_SOURCE)))
 CC=g++
 
 # Flags for compiler
-CC_FLAGS=-c       \
-	       -Wall    -g
+CXXFLAGS = -Wall -g -fsanitize=address -fno-omit-frame-pointer
 
 # Command used at clean target
 RM = rm -rf
@@ -26,26 +25,26 @@ RM = rm -rf
 all: objFolder $(PROJ_NAME)
 
 $(PROJ_NAME): $(OBJ)
-		@ echo 'Building binary using G++ linker: $@'
-		$(CC) $^ -o $@
-		@ echo 'Finished building binary: $@'
-		@ echo ' '
+	@ echo 'Building binary using G++ linker: $@'
+	$(CC) $^ $(CXXFLAGS) -o $@
+	@ echo 'Finished building binary: $@'
+	@ echo ' '
 
 ./objetos/%.o: ./source/%.cpp ./source/%.h
-		@ echo 'Building target using G++ compiler: $<'
-		$(CC) $< $(CC_FLAGS) -o $@
-		@ echo ' '
+	@ echo 'Building target using G++ compiler: $<'
+	$(CC) -c $< $(CXXFLAGS) -o $@
+	@ echo ' '
 
 ./objetos/main.o: ./source/main.cpp $(H_SOURCE)
-		@ echo 'Building target using G++ compiler: $<'
-		$(CC) $< $(CC_FLAGS) -o $@
-		@ echo ' '
+	@ echo 'Building target using G++ compiler: $<'
+	$(CC) -c $< $(CXXFLAGS) -o $@
+	@ echo ' '
 
 objFolder:
-		@ mkdir -p objetos
+	@ mkdir -p objetos
 
 clean:
-		@ $(RM) ./objetos/*.o $(PROJ_NAME) *~
-		@ rmdir objetos
+	@ $(RM) ./objetos/*.o $(PROJ_NAME) *~
+	@ rmdir objetos
 
 .PHONY: all clean
