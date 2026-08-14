@@ -40,6 +40,8 @@ class Rotas_diarias{
         double get_tempo_disponivel_pm(int ag);
         void finaliza_turno(int ag, double valor);
         int troca_turno(int ag, double dist_volta_posto);
+        void retroceder_turno(int ag);
+        void avancar_turno(int ag);
         
         void exibir_dia() const;
 };

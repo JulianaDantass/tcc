@@ -18,6 +18,9 @@ Swap(2,2)— Permutation of two adjacent customers, k and l, from a router1 by a
 #include "solucao.h"
 #include "instancia.h"
 
+
+//tem que ver se o calculo de cada delta tá certo
+
 class Vizinhancas{    
     
     private:
@@ -33,6 +36,6 @@ class Vizinhancas{
         bool inter_swap22(Solucao &s);      
         
         //debug
-        void printa(Rota &r);
+        void printa(Rota &r, int mi, int mj);
 };
 

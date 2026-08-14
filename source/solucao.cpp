@@ -12,7 +12,7 @@ Solucao::Solucao( int qtd){
 
 }
 
-const std::vector<Rotas_diarias>& Solucao::get_dias_planejamento() const{
+std::vector<Rotas_diarias>& Solucao::get_dias_planejamento(){
     return dias_planejamento;
 }
 
@@ -58,6 +58,10 @@ void Solucao::exibe_solucao() const{
         dias_planejamento[i].exibir_dia();
         std::cout << "fim do dia" << std::endl;
     }
+}
+
+std::vector<Rotas_diarias> Solucao::get_dias_planejamento_estatico(){
+    return dias_planejamento;
 }
 
 

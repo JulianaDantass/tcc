@@ -11,8 +11,8 @@
 
 Rotas_diarias::Rotas_diarias(int n_agentes){
 
-    //eu tenho um valor int associado a cada agente
-    turno.resize(n_agentes);    
+    
+    turno.resize(n_agentes); //eu tenho um valor int associado a cada agente   
     
     for(int i = 0; i < n_agentes; i++){
         rotas.push_back({contador_id, 0, 0, 0.0, 0.0, 0.0, std::vector<int>{0}});
@@ -21,7 +21,7 @@ Rotas_diarias::Rotas_diarias(int n_agentes){
     }
 } 
 
-
+//deslocamento é a distancia entre o ultimo paciente da rota e o paciente que será adicionado
 int Rotas_diarias::adicionar_visita(int &p, int &agente, double &deslocamento, double &t_volta_posto) {
     
     double t_chegada;
@@ -169,6 +169,16 @@ void Rotas_diarias::finaliza_turno(int ag, double c_volta_posto){
 int Rotas_diarias::get_turno(int ag){
     
     return turno[ag];
+}
+
+void Rotas_diarias::retroceder_turno(int ag){
+
+    turno[ag]--;
+}
+
+void Rotas_diarias::avancar_turno(int ag){
+
+    turno[ag]--;
 }
 
 void Rotas_diarias::exibir_dia() const{

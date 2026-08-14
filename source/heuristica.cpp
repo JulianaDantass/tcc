@@ -15,7 +15,7 @@ using namespace std;
 
 #define MAX_ITER 300
 #define QTD_DIAS_PLANEJAMENTO 30
-#define QTD_VIZINHANCAS_INTER 1//3 
+#define QTD_VIZINHANCAS_INTER 3 
 #define QTD_VIZINHANCAS_INTRA 3
 #define ILS_EXECUCOES 1//50
 #define NUMERO_AGENTES 5 
@@ -506,6 +506,76 @@ Solucao Heuristica::solucao_inicial(){
 
 }
 */
+void Heuristica::printa_solucao(Solucao& s, int dia1, int dia2, int idxRota1, int idxRota2, int m1, int m2){
+
+	const std::string VERMELHO = "\033[31m";
+	const std::string RESET = "\033[0m";
+	std::vector<Rotas_diarias> dias = s.get_dias_planejamento_estatico();
+	cout << endl;
+	int k = 0;
+    for(Rotas_diarias &d : dias){
+		cout << "esse é o dia " << k << endl;
+		for(int i = 0; i < d.rotas.size(); i++){
+			cout << "rota " << i << ": "; 
+			for(int j = 0; j < d.rotas[i].sequencia.size(); j++){
+				
+				if(k == dia1 and i == idxRota1 and j == m1){
+					cout << VERMELHO << d.rotas[i].sequencia[j] << " " << RESET;
+				}else if(k == dia2 and i == idxRota2 and j == m2){
+					cout << VERMELHO << d.rotas[i].sequencia[j] << " " << RESET;
+				}else{
+					cout << d.rotas[i].sequencia[j] << " ";
+				}
+			}
+			cout << endl;
+		}
+		k++;
+	}
+}
+
+bool Heuristica::validar_rotas(const std::vector<Rotas_diarias>& antigas, const std::vector<Rotas_diarias>& novas, int dia1, int dia2, int idxRota1, int idxRota2){
+    // Se a quantidade total de rotas mudou, houve erro
+    
+	if (antigas.size() != novas.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < antigas.size(); i++) {
+        // Pula as duas rotas que foram alteradas de propósito
+		for (int j = 0; j < antigas.size(); j++) {
+
+        	if ( (i == dia1 and j == idxRota1)  or  (i == dia2 and j == idxRota2)) {
+            	continue;
+        	}
+
+        	// antigas[i] != novas[i] compara o tamanho e todos os elementos da rota i de uma vez
+        	if (antigas[i].rotas[j].id_rota != novas[i].rotas[j].id_rota){
+            	cout << "erro no id" << endl;
+				return false;
+        	}
+			if (antigas[i].rotas[j].qtd_pacientes_am != novas[i].rotas[j].qtd_pacientes_am){
+            	cout << "erro na qtd de paci am" << endl;
+				return false;
+        	}
+			if (antigas[i].rotas[j].qtd_pacientes_pm != novas[i].rotas[j].qtd_pacientes_pm){
+            	cout << "erro na qtd de paci pm" << endl;
+				return false;
+        	}
+			if (antigas[i].rotas[j].tempo_total != novas[i].rotas[j].tempo_total){
+            	cout << "erro no tempo" << endl;
+				return false;
+        	}
+			if (antigas[i].rotas[j].sequencia != novas[i].rotas[j].sequencia){
+            	cout << "erro na seq" << endl;
+				return false;
+        	}
+    
+		}
+	}
+
+    return true;
+}
+
 void Heuristica::ILS_RVND(){
 	
 	s = solucao_inicial();
@@ -514,8 +584,8 @@ void Heuristica::ILS_RVND(){
 	
 	for (int i = 1; i <= MAX_ITER; i++) {
 		
-		solucao_inicial();
-		verifica_fo(s); cout << "passou pela veri da solucao inicial" << endl;
+		s = solucao_inicial();
+		cout << "passou pela veri da solucao inicial" << endl;
 
 		s_local = s;
 
@@ -525,14 +595,15 @@ void Heuristica::ILS_RVND(){
         while (iterILS <= MaxIterILS) {
             
             RVND(s);
-			verifica_fo(s);						
+			cout << "saiu do rvnd" << endl;
+			//verifica_fo(s);						
             //Critério de aceitação do ILS
             if (s.get_fo() < s_local.get_fo()) {
                 s_local = s;
                 iterILS = 0;
             }
-            
             perturbacao(s_local);
+			cout << "saiu da pert" << endl;
             iterILS++;
         }
         
@@ -543,7 +614,7 @@ void Heuristica::ILS_RVND(){
 	}
 }
 
-void Heuristica::busca_intra_rota(Solucao &s){
+void Heuristica::busca_intra_rota(Solucao &s, Vizinhancas &mov){
 	
 	bool melhorou_intra;
    	vector<int> NLA;
@@ -559,13 +630,16 @@ void Heuristica::busca_intra_rota(Solucao &s){
 		switch (NLA[n]){
 			 
 			case 1:
-				//melhorou_intra = movimentos.intra_oropt2(s);
+				cout << "ia1" << endl;
+				melhorou_intra = mov.intra_oropt2(s);
 				break;
 			case 2:
-				//melhorou_intra = movimentos.intra_reinsertion(s);
+				cout << "ia2" << endl;
+				melhorou_intra = mov.intra_reinsertion(s);
 				break;
-			case 3: 
-				//melhorou_intra = movimentos.intra_exchange(s);
+			case 3:
+				cout << "ia3" << endl; 
+				melhorou_intra = mov.intra_exchange(s);
 				break;
 		}
         
@@ -596,25 +670,23 @@ void Heuristica::RVND(Solucao &s){
         //chama a vizinhança sorteada
         switch (NL[n]){
 			case 1:  
-				//melhorou =  movimentos.inter_shift10(s);  
-				//verifica_fo(s); cout << "passou do shift10" << endl;
-				
+				cout << "i1" << endl;
+				melhorou =  movimentos.inter_shift10(s);  
 				break;
 			case 2:
-				//melhorou =  movimentos.inter_swap11(s);
-				//verifica_fo(s); cout << "passou do swap11" << endl;
+				cout << "i2" << endl;
+				melhorou =  movimentos.inter_swap11(s);
 				break;
 			case 3:
+				cout << "i3" << endl;
 				melhorou =  movimentos.inter_swap22(s);
-				verifica_fo(s); cout << "passou do swap22" << endl;
 				break;
 		}
         
         //se melhorou a solucao 
         if (melhorou) {
-			
 			//busca intrarota
-            busca_intra_rota(s);
+            busca_intra_rota(s, movimentos);
 
             //Reinicia a lista de vizinhanças para explorar todas novamente
             NL.clear();
@@ -629,154 +701,250 @@ void Heuristica::RVND(Solucao &s){
     } 
 }
 
+/*
+Multiple-Swap(1,1) – P (1) —Multiple random Swap(1,1) moves are performed in
+sequence. After some preliminary experiments, the number of successive moves was
+empirically set to be chosen from the interval {0.5v, 0.6v, . . . , 1.4v, 1.5v}.
+*/
 void Heuristica::perturbacao(Solucao &s){
 
-    std::random_device rd;  
-    std::mt19937 gen(rd()); 
+	const std::string AZUL = "\033[34m";
+    const std::string RESET = "\033[0m";
+    static std::random_device rd; 
+    static std::mt19937 gen(rd()); 
     std::uniform_int_distribution<> distrib(5, 15);
 
     int n_sorteado = distrib(gen);
 
     double multiplicador = n_sorteado / 10.0;
     int qtd_movimentos = multiplicador * NUMERO_AGENTES;
-	auto dias = s.get_dias_planejamento();
-
+	std::vector<Rotas_diarias> rotas_antigas = s.get_dias_planejamento();
+	std::vector<Rotas_diarias>& rotas_novas = s.get_dias_planejamento();
+	
+	cout << AZUL << "SERAO REALIZADOS " << qtd_movimentos << " DE SWAPS" << RESET << endl;
 	for(int i=0; i < qtd_movimentos; i++){
 		//std::mt19937 gen(rd()); 
-		std::uniform_int_distribution<> distrib(0, dias.size()-1);
+		std::uniform_int_distribution<> distrib(0, rotas_antigas.size()-1);
 		int ind_dia1 = distrib(gen);
 		int ind_dia2 = distrib(gen);
 
-		distrib.param(decltype(distrib)::param_type(0, dias[ind_dia1].rotas.size()-1));
+		distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia1].rotas.size()-1));
 		int ind_rota1 = distrib(gen);
-		distrib.param(decltype(distrib)::param_type(0, dias[ind_dia2].rotas.size()-1));
+		distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia2].rotas.size()-1));
 		int ind_rota2 = distrib(gen);
-
+		
 		while(1){
 
-			//se forem rotas diferentes, entao vamos promover  troca 
-            if(dias[ind_dia1].rotas[ind_rota1].id_rota != dias[ind_dia2].rotas[ind_rota2].id_rota){ 
+            if(rotas_antigas[ind_dia1].rotas[ind_rota1].id_rota != rotas_antigas[ind_dia2].rotas[ind_rota2].id_rota){ 
                 break;
             }
-			//std::mt19937 gen(rd());
+			//se forem rotas iguais, vamos sortear novamente
 			ind_rota2 = distrib(gen);
 		}
 
-		distrib.param(decltype(distrib)::param_type(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1));
-		int j = distrib(gen);
-		distrib.param(decltype(distrib)::param_type(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1));
-		int k = distrib(gen);
+		distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size()-1));
+		int paciente1 = distrib(gen);
+		distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size()-1));
+		int paciente2 = distrib(gen);
 		
 		while(1){
-			if(dias[ind_dia1].rotas[ind_rota1].sequencia[j] != 0){
+			if(rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1] != 0){
 				break;
 			}
-			distrib.param(decltype(distrib)::param_type(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1));
-			j = distrib(gen);
+			//tem que ser -2 pq o último nó é o depósito
+			distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size()-2));
+			paciente1 = distrib(gen);
 		}
 
 		while(1){
-			if(dias[ind_dia2].rotas[ind_rota2].sequencia[k] != 0){
+			if(rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2] != 0){
 				break;
 			}
-			distrib.param(decltype(distrib)::param_type(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1));
-			k = distrib(gen);
+			//tem que ser -2 pq o último nó é o depósito
+			distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size()-2));
+			paciente2 = distrib(gen);
 		}
-		
-		const auto& rota1 = dias[ind_dia1].rotas[ind_rota1].sequencia;
-		const auto& rota2 = dias[ind_dia2].rotas[ind_rota2].sequencia;
-		double necessario1;
+		cout << "dia: " << ind_dia1  << " rota: " << ind_rota1 << "tamanho da rota: " << rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size() << " / escolhido: " << paciente1 << endl;
+		cout << "dia: " << ind_dia2  << " rota: " << ind_rota2 << "tamanho da rota: " << rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size() << " / escolhido: " << paciente2 << endl;
+		double necessario1, necessario2;
+
 
 		while(1){	
-			necessario1 = 	+dados->matriz_distancias[rota1[j-1]][rota2[k]]
-							+dados->matriz_distancias[rota2[k]][rota1[j+1]] 
-							-dados->matriz_distancias[rota1[j-1]][rota1[j]] 
-							-dados->matriz_distancias[rota1[j]][rota1[j+1]];
+			const auto& rota1 = rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia;
+			const auto& rota2 = rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia;
+			
+			necessario1 += 	dados->matriz_distancias[rota1[paciente1-1]][rota2[paciente2]];
+			necessario1 +=	dados->matriz_distancias[rota2[paciente2]][rota1[paciente1+1]];
+			necessario1 -=	dados->matriz_distancias[rota1[paciente1-1]][rota1[paciente1]];
+			necessario1 -= 	dados->matriz_distancias[rota1[paciente1]][rota1[paciente1+1]];
 			
 			//o cliente está na tarde
-			if(j > dias[ind_dia1].rotas[ind_rota1].qtd_pacientes_am+1){
+			if(paciente1 > rotas_antigas[ind_dia1].rotas[ind_rota1].qtd_pacientes_am+1){
 
-				//disponivel é insuficiente
-				if(dias[ind_dia1].get_tempo_disponivel_am(ind_rota1) < necessario1){    
-					distrib.param(decltype(distrib)::param_type(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1));
-					j = distrib(gen);
+				//disponível é insuficiente
+				if(rotas_antigas[ind_dia1].get_tempo_disponivel_pm(ind_rota1) < necessario1){    
+
+						cout << "[NEC1] não é suficiente. sorteando nova rota entre 0 e " << rotas_antigas[ind_dia1].rotas.size()-1 << "....."; getchar();
+						//se o valor é insuficiente então temos que sortear outra rota
+
+						distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia1].rotas.size()-1));
+						ind_rota1 = distrib(gen);
+						
+						while(rotas_antigas[ind_dia1].rotas[ind_rota1].id_rota == rotas_antigas[ind_dia2].rotas[ind_rota2].id_rota){
+							ind_rota1 = distrib(gen);
+						}
+						cout << "rota: " << ind_dia1 << endl;
+						//temos que sortear, consequentemente, outro paciente
+
+						cout << "novo escolhido: ";
+						distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size()-2));
+						paciente1 = distrib(gen);
+						
+						while(rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1] == 0){
+							
+							distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size()-2));
+							paciente1 = distrib(gen);
+						}
+						cout << "novo escolhido1: " << paciente1 << endl;
 				}else{
 					//disponivel é suficiente
 					break;
 				}
-
+			
 			//o cliente tá na manhã
 			}else{
 
-				if(dias[ind_dia1].get_tempo_disponivel_am(ind_rota1) < necessario1){    
-					distrib.param(decltype(distrib)::param_type(0, dias[ind_dia1].rotas[ind_rota1].sequencia.size()-1));
-					j = distrib(gen);
+				if(rotas_antigas[ind_dia1].get_tempo_disponivel_am(ind_rota1) < necessario1){    
+
+					cout << "[NEC1] não é suficiente. sorteando nova paci para tarde....";
+					//se o valor é insuficiente então temos que forçar o paciente a ser da tarde
+					int primeira_posicao_tarde = rotas_antigas[ind_dia1].rotas[ind_rota1].qtd_pacientes_am;
+					distrib.param(decltype(distrib)::param_type(primeira_posicao_tarde, rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size()-2));	
+					paciente1 = distrib(gen);
+
+					while(rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1] == 0){
+				
+						distrib.param(decltype(distrib)::param_type(primeira_posicao_tarde, rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia.size()-2));
+						paciente1 = distrib(gen);
+					}
+					cout << "novo escolhido1: " << paciente1 << endl;
 				}else{
 					//disponivel é suficiente
 					break;
 				}
 			}
+			
 		}
 
-		double necessario2;
-
+		cout << "saiu do loop1" << endl;
+		//tem q alterar
 		while(1){			
-			necessario2 = 	+dados->matriz_distancias[rota2[k-1]][rota1[j]]
-							+dados->matriz_distancias[rota1[j]][rota2[k+2]] 
-							-dados->matriz_distancias[rota2[k-1]][rota2[k]] 
-							-dados->matriz_distancias[rota2[k]][rota2[k+1]] ;
+			const auto& rota1 = rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia;
+			const auto& rota2 = rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia;
+
+			necessario2 = 	+dados->matriz_distancias[rota2[paciente2-1]][rota1[paciente1]]
+							+dados->matriz_distancias[rota1[paciente1]][rota2[paciente2+2]] 
+							-dados->matriz_distancias[rota2[paciente2-1]][rota2[paciente2]] 
+							-dados->matriz_distancias[rota2[paciente2]][rota2[paciente2+1]] ;
 			
 			//o cliente está na tarde
-			if(k > dias[ind_dia2].rotas[ind_rota2].qtd_pacientes_am+1){
+			if(paciente2 > rotas_antigas[ind_dia2].rotas[ind_rota2].qtd_pacientes_am+1){
 
 				//disponivel é insuficiente
-				if(dias[ind_dia2].get_tempo_disponivel_pm(ind_rota2) < necessario2){    
-					distrib.param(decltype(distrib)::param_type(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1));
-					k = distrib(gen);
+				if(rotas_antigas[ind_dia2].get_tempo_disponivel_pm(ind_rota2) < necessario2){   
+
+					//se o valor é insuficiente então temos que sortear outra rota
+						distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia2].rotas.size()-1));
+						ind_rota2 = distrib(gen);
+
+						while(rotas_antigas[ind_dia1].rotas[ind_rota1].id_rota == rotas_antigas[ind_dia2].rotas[ind_rota2].id_rota){
+							ind_rota2 = distrib(gen);
+						}
+						
+						//temos que sortear, consequentemente, outro paciente
+
+						distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size()-2));
+						paciente2 = distrib(gen);
+						
+						while(rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente1] == 0){
+							
+							distrib.param(decltype(distrib)::param_type(0, rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size()-2));
+							paciente2 = distrib(gen);
+						}
 				}else{
 					//disponivel é suficiente
 					break;
 				}
-
 			//o cliente tá na manhã
 			}else{
 
-				if(dias[ind_dia2].get_tempo_disponivel_pm(ind_rota2) < necessario2){    
-					distrib.param(decltype(distrib)::param_type(0, dias[ind_dia2].rotas[ind_rota2].sequencia.size()-1));
-					k = distrib(gen);
+				if(rotas_antigas[ind_dia2].get_tempo_disponivel_pm(ind_rota2) < necessario2){    
+
+					//se o valor é insuficiente então temos que forçar o paciente a ser da tarde
+					int primeira_posicao_tarde = rotas_antigas[ind_dia2].rotas[ind_rota2].qtd_pacientes_am;
+					distrib.param(decltype(distrib)::param_type(primeira_posicao_tarde, rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size()-2));	
+					paciente2 = distrib(gen);
+
+					while(rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2] == 0){
+				
+						int primeira_posicao_tarde = rotas_antigas[ind_dia2].rotas[ind_rota2].qtd_pacientes_am;
+						distrib.param(decltype(distrib)::param_type(primeira_posicao_tarde, rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia.size()-2));
+						paciente2 = distrib(gen);
+					}
 				}else{
 					//disponivel é suficiente
 					break;
 				}
 			}
 		}
+		cout << "saiu do loop2" << endl;
+
+		necessario1 = 	+dados->matriz_distancias[rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1-1]][rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2]]
+						+dados->matriz_distancias[rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2]][rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1+1]]
+						-dados->matriz_distancias[rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1-1]][rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1]]
+			 			-dados->matriz_distancias[rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1]][rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1+1]];
+
+		necessario2 = 	+dados->matriz_distancias[rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2-1]][rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1]]
+							+dados->matriz_distancias[rotas_antigas[ind_dia1].rotas[ind_rota1].sequencia[paciente1]][rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2+2]] 
+							-dados->matriz_distancias[rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2-1]][rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2]] 
+							-dados->matriz_distancias[rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2]][rotas_antigas[ind_dia2].rotas[ind_rota2].sequencia[paciente2+1]] ;
 		
-		//efetivar o swap e alterar a fo
-		if(k > dias[ind_dia2].rotas[ind_rota2].qtd_pacientes_am){
+							//aqui ocorre a mudança --------------------------------------------------------------------------
+		cout << "ANTES " << endl;
+		printa_solucao(s, ind_dia1, ind_rota1, paciente1, ind_dia2, ind_rota2, paciente2);
+		if(paciente2 > rotas_novas[ind_dia2].rotas[ind_rota2].qtd_pacientes_am){
 
-            dias[ind_dia2].rotas[ind_rota2].tempo_pm += necessario2;
-        
+            rotas_novas[ind_dia2].rotas[ind_rota2].tempo_pm += necessario2;
+			rotas_novas[ind_dia1].rotas[ind_rota1].qtd_pacientes_pm++;
         }else{ 
-            dias[ind_dia2].rotas[ind_rota2].tempo_am += necessario2;
-            dias[ind_dia2].rotas[ind_rota2].qtd_pacientes_am++;
+            rotas_novas[ind_dia2].rotas[ind_rota2].tempo_am += necessario2;
+            rotas_novas[ind_dia2].rotas[ind_rota2].qtd_pacientes_am++;
         }
-        dias[ind_dia2].rotas[ind_rota2].tempo_total += necessario2;
+        rotas_novas[ind_dia2].rotas[ind_rota2].tempo_total += necessario2;
 
 
-        if(j > dias[ind_dia1].rotas[ind_rota1].qtd_pacientes_am){
+        if(paciente1 > rotas_novas[ind_dia1].rotas[ind_rota1].qtd_pacientes_am){
             
-            dias[ind_dia1].rotas[ind_rota1].tempo_pm += necessario1;
+            rotas_novas[ind_dia1].rotas[ind_rota1].tempo_pm += necessario1;
+			rotas_novas[ind_dia1].rotas[ind_rota1].qtd_pacientes_pm++;
         }else{
 
-            dias[ind_dia1].rotas[ind_rota1].tempo_am += necessario1;
-            dias[ind_dia1].rotas[ind_rota1].qtd_pacientes_am--;
+            rotas_novas[ind_dia1].rotas[ind_rota1].tempo_am += necessario1;
+            rotas_novas[ind_dia1].rotas[ind_rota1].qtd_pacientes_am--;
         }
-        dias[ind_dia1].rotas[ind_rota1].tempo_total += necessario1;
+        rotas_novas[ind_dia1].rotas[ind_rota1].tempo_total += necessario1;
         
         s.set_fo(s.get_fo() + necessario1 + necessario2 - float(DURACAO) - float(DURACAO));
-		
-		std::swap(dias[ind_dia1].rotas[ind_rota1].sequencia[j], dias[ind_dia2].rotas[ind_rota2].sequencia[k]);
+		std::swap(rotas_novas[ind_dia1].rotas[ind_rota1].sequencia[paciente1], rotas_novas[ind_dia2].rotas[ind_rota2].sequencia[paciente2]);
 
+		cout << "DEPOIS " << endl;
+		printa_solucao(s, ind_dia1, ind_rota1, paciente1, ind_dia2, ind_rota2, paciente2);
+
+		if (validar_rotas(rotas_antigas, rotas_novas, ind_dia1, ind_dia2, ind_rota1, ind_rota2)) {
+        	std::cout << "OK: As outras rotas estao intactas." << std::endl;
+    	} else {
+        	std::cout << "ERRO: Houve alteracao indevida em outra rota." << std::endl;
+    	}
 		//fim do for
 	}
 }
@@ -793,11 +961,12 @@ void Heuristica::verifica_fo( Solucao &s){
 	double t_am, t_pm;
 
 	t_am = t_pm = 0;
+	int total_pacientes = 0;
 		
 	//cout << "dias: " << dias.size() << endl;
 	for (int i = 0; i < qtd_dias; i++) {
 			
-		dias[i].exibir_dia();
+		//dias[i].exibir_dia();
         for (int j = 0; j < dias[i].rotas.size(); j++) {
 			
 			qtd_zeros = 0;
@@ -817,22 +986,27 @@ void Heuristica::verifica_fo( Solucao &s){
 					t_am += t;
 				}
 			}
-			//cout << "qtd_paci_am: " << dias[i].rotas[j].qtd_pacientes_am << endl;
+			
 			//cout << "qtd_paci_pm: " << dias[i].rotas[j].qtd_pacientes_pm << endl;
 			t_am += 0.25* (dias[i].rotas[j].qtd_pacientes_am); 
 			t_pm += 0.25* (dias[i].rotas[j].qtd_pacientes_pm);
 			
 			if(t_am - dias[i].rotas[j].tempo_am > double(EPSILON)){
 				cout << "Tempos am não batem: ";
+				cout << "calculado: " << t_am << " real: " << dias[i].rotas[j].tempo_am << endl;
+				cout << "qtd_paci_am: " << dias[i].rotas[j].qtd_pacientes_am << endl;
 			}
 
 			if(t_pm - dias[i].rotas[j].tempo_pm > double(EPSILON)){
 				cout << "Tempos pm não batem ";
 				cout << "calculado: " << t_pm << " real: " << dias[i].rotas[j].tempo_pm << endl;
 			}
+
+			total_pacientes += dias[i].rotas[j].qtd_pacientes_am + dias[i].rotas[j].qtd_pacientes_pm;
+
 		}
     } 
-	
+	 
 	t_total += 0.25*(dados->clientes_nao_prioritarios.size()+dados->clientes_prioritarios.size());	
 		
 	

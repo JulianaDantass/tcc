@@ -22,13 +22,15 @@ class Heuristica{
 		~Heuristica();
 		vector<InsercaoInfo> calcular_custo_insercao(Rotas_diarias* d, vector<bool> &pacientes_inseridos);
 		Solucao solucao_inicial();
-		void busca_intra_rota(Solucao &s);
+		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
 		void perturbacao(Solucao &s);
 		void RVND(Solucao &s);
 		void ILS_RVND();
 		
 		//DEBUG
+		bool validar_rotas(const std::vector<Rotas_diarias>& antigas, const std::vector<Rotas_diarias>& novas, int dia1, int dia2, int idxRota1, int idxRota2);
 		void verifica_fo(Solucao& s);
+		void printa_solucao(Solucao& s, int dia1, int dia2, int idxRota1, int idxRota2, int m1, int m2);
 
 	private:
 		vector<vector<InsercaoInfo>> custos_insercao;

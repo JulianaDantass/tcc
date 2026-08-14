@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <string>
 
 #define EPSILON 1e-4 //margem de tolerancia
 #define DURACAO 0.25
@@ -14,7 +15,7 @@ Vizinhancas::Vizinhancas(const Instancia *d){
 bool Vizinhancas::intra_reinsertion(Solucao &s){
 
     bool houve_melhoria_rotas = 0;
-    auto dias = s.get_dias_planejamento();
+    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     double delta, 
     melhor_delta = 0;                 
 
@@ -95,15 +96,18 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
     
     if (melhor_delta < -double(EPSILON)){
 
-        for(auto c: dias[melhor_d].rotas[melhor_a].sequencia){
-            cout << c << " ";
-        }
-        cout << endl;
-    
+        const int tam_rota = dias[melhor_d].rotas[melhor_a].sequencia.size(); 
 
-        //alterando os tempos
+        /*
+        cout << "intra reinsertion" << endl;
+        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        cout << "rota antes: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, melhor_j);
+        */
+
         auto& seq = dias[melhor_d].rotas[melhor_a].sequencia;
 
+        //alterando os tempos
         double dif_i = +dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i+1]] 
                         -dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i]] 
                         -dados->matriz_distancias[seq[melhor_i]][seq[melhor_i+1]];
@@ -120,6 +124,7 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
             if(melhor_i <= dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am--;
+                dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm++;
                 dias[melhor_d].rotas[melhor_a].tempo_am = dias[melhor_d].rotas[melhor_a].tempo_am - DURACAO + dif_i;
                 dias[melhor_d].rotas[melhor_a].tempo_pm += DURACAO + dif_j; 
             
@@ -136,15 +141,14 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
             if(melhor_i > (dias[melhor_d].rotas[melhor_a].qtd_pacientes_am+1) ){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am++;
+                dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm--;
                 dias[melhor_d].rotas[melhor_a].tempo_am += DURACAO + dif_j; 
                 dias[melhor_d].rotas[melhor_a].tempo_pm = dias[melhor_d].rotas[melhor_a].tempo_pm - DURACAO + dif_i;
-            
             //paciente da manha para manha
             }else{
                 dias[melhor_d].rotas[melhor_a].tempo_am += melhor_delta;
             }
         }
-        
         dias[melhor_d].rotas[melhor_a].tempo_total = dias[melhor_d].rotas[melhor_a].tempo_total + melhor_delta;
         s.set_fo(s.get_fo() + melhor_delta);
 
@@ -156,21 +160,31 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
 
         }else{
             seq.insert(seq.begin() + melhor_j, seq[melhor_i]);
-            seq.erase(seq.begin() + melhor_i + 2);
+            seq.erase(seq.begin() + melhor_i + 1);
         }
-        
+
+        if(dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm == 0 & melhor_i == tam_rota-2){
+            seq.erase(seq.begin() + melhor_i);
+        }
+                
         //corfirmando que houve melhoria em alguma rota
-        houve_melhoria_rotas = 1;     
+        houve_melhoria_rotas = 1;
         
+        /*
+        cout << "dps: "<< endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, melhor_j);
+        getchar();
+        */
     }
 
     return houve_melhoria_rotas;
 }
 
+//Or-opt2— Two adjacent customers are removed and inserted in another position of the route.
 bool Vizinhancas::intra_oropt2(Solucao &s){
 
     bool houve_melhoria_rotas = 0;
-    auto dias = s.get_dias_planejamento();
+    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     double delta, melhor_delta = 0;              
     int melhor_i, melhor_j;       
     int melhor_a, melhor_d;
@@ -244,6 +258,14 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
     
     if (melhor_delta < -double(EPSILON)){
 
+        //debug
+        /*
+        cout << "intra oropt2" << endl;
+        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        cout << "rota antes: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, melhor_j);
+        */
+
         //alterando os tempos
         auto& seq = dias[melhor_d].rotas[melhor_a].sequencia;
 
@@ -263,6 +285,7 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
             if(melhor_i < dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am -= 2;
+                dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm += 2;
                 dias[melhor_d].rotas[melhor_a].tempo_am -=  2*DURACAO + dif_i;
                 dias[melhor_d].rotas[melhor_a].tempo_pm +=  2*DURACAO + dif_j; 
             
@@ -278,6 +301,7 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
             if(melhor_i > dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am += 2;
+                dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm -= 2;
                 dias[melhor_d].rotas[melhor_a].tempo_am += 2*DURACAO + dif_j; 
                 dias[melhor_d].rotas[melhor_a].tempo_pm -= 2*DURACAO + dif_i;
             
@@ -291,22 +315,27 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
         s.set_fo(s.get_fo() + melhor_delta);
 
         //alterando a rota  
-        if(melhor_i < melhor_j) {
-            seq.insert(seq.begin() + melhor_j + 1, seq[melhor_i]);
-            seq.insert(seq.begin() + melhor_j + 2, seq[melhor_i+1]);
-            seq.erase(seq.begin() + (melhor_i + 1));
-            seq.erase(seq.begin() + melhor_i);
+        if(melhor_j < melhor_i) {
+            std::rotate(
+            seq.begin() + melhor_j, 
+            seq.begin() + melhor_i, 
+            seq.begin() + melhor_i + 2);
 
         }else{
-            seq.insert(seq.begin() + melhor_j, seq[melhor_i]);
-            seq.insert(seq.begin() + melhor_j + 1, seq[melhor_i+2]);
-            seq.erase(seq.begin() + melhor_i + 2);
-            seq.erase(seq.begin() + melhor_i + 2);
+            std::rotate(
+            seq.begin() + melhor_i, 
+            seq.begin() + melhor_i + 2, 
+            seq.begin() + melhor_j + 1
+            );
         }
         houve_melhoria_rotas = 1;     //corfirmando que houve melhoria em alguma rota
-    }
 
-    //confere(dias[melhor_d].rotas[melhor_a]);getchar();
+        /*
+        cout << "rota dps: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, melhor_j);
+        getchar();
+        */
+    }
 
     return houve_melhoria_rotas;
 }
@@ -314,7 +343,7 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
 bool Vizinhancas::intra_exchange(Solucao &s){
     
     bool houve_melhoria_rotas = 0;
-    auto dias = s.get_dias_planejamento();
+    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
 
     //vai guardar a diferenca de valor em relacao a solucao de um dos dias
     double delta, 
@@ -371,17 +400,17 @@ bool Vizinhancas::intra_exchange(Solucao &s){
         }   
     }
 
-    /*
-    cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
-        cout << "rota: ";
-        for(auto c: dias[d].rotas[melhor_a].sequencia){
-            cout << c << " ";
-        }
-        cout << endl;
-    */
-
     if (melhor_delta < -double(EPSILON)){
-        
+
+        //debug
+        /*
+        cout << "intra exchange" << endl;
+        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        cout << "rota antes: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, melhor_j);
+        //----------------------------
+        */
+       
         auto& rota = dias[melhor_d].rotas[melhor_a];
         const auto& seq = rota.sequencia;
         
@@ -420,21 +449,25 @@ bool Vizinhancas::intra_exchange(Solucao &s){
         
         dias[melhor_d].rotas[melhor_a].tempo_total = dias[melhor_d].rotas[melhor_a].tempo_total + melhor_delta;
         s.set_fo(s.get_fo() + melhor_delta);
-
-        //executando o movimento
-        swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i], dias[melhor_d].rotas[melhor_a].sequencia[melhor_j]);
-                    
-        //corfirmando que houve melhoria em alguma rota
+        swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i], dias[melhor_d].rotas[melhor_a].sequencia[melhor_j]); //executando o movimento
         houve_melhoria_rotas = 1;     
+
+        //debug
+        /*
+        cout << "rota dps: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, melhor_j);
+        getchar();
+        */
     }
 
     return houve_melhoria_rotas;
 }
 
+//Shift(1,0)– A customer k is transferred from a route r1 to a route r2.
 bool Vizinhancas::inter_shift10(Solucao &s){  
 
     bool houve_melhoria_rotas = 0;
-    auto dias = s.get_dias_planejamento();
+    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     //vai guardar a diferenca de valor em relacao a solucao de um dos dias
     double delta, 
     melhor_delta = 0, melhor_delta1, melhor_delta2;                 
@@ -461,7 +494,7 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                         -dados->matriz_distancias[rota1[i-1]][rota1[i]] 
                         -dados->matriz_distancias[rota1[i]][rota1[i+1]];
 
-                
+
 
                 //teoricamente tirar um paciente não seria problema mas checo:
                 if(i > dias[d].rotas[a].qtd_pacientes_am){
@@ -537,15 +570,29 @@ bool Vizinhancas::inter_shift10(Solucao &s){
     if (melhor_delta < -double(EPSILON)){
 
         //debug
-        cout << "a rota a seguir deve ter o cara da posicao " <<  melhor_i << " retirado" << endl;
-        printa(dias[melhor_d].rotas[melhor_a]);
-        cout << "a rota a seguir deve ter o cara colado na posicao " <<  melhor_j << endl;
-        printa(dias[melhor_e].rotas[melhor_b]);
+        /*
+        cout << "inter shift10" << endl;
+        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        cout << "rotas antes: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        getchar();
+        */
         
+        auto rota1 = dias[melhor_d].rotas[melhor_a].sequencia;
+        auto rota2 = dias[melhor_e].rotas[melhor_b].sequencia;
         
+
+        if(dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm == 1){
+            dias[melhor_d].retroceder_turno(melhor_a);
+            //retirando o 0 que fica a mais na solução já q o unico paciente do turno foi retirado
+            dias[melhor_d].rotas[melhor_a].sequencia.erase(dias[melhor_d].rotas[melhor_a].sequencia.begin() + melhor_i+1);
+        }
+
         if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
 
             dias[melhor_e].rotas[melhor_b].tempo_pm += melhor_delta2;
+            dias[melhor_e].rotas[melhor_b].qtd_pacientes_pm++;
         
         }else{ 
             dias[melhor_e].rotas[melhor_b].tempo_am += melhor_delta2;
@@ -554,9 +601,8 @@ bool Vizinhancas::inter_shift10(Solucao &s){
         dias[melhor_e].rotas[melhor_b].tempo_total += melhor_delta2;
 
         //retirando o custo do paciente da posi i
-
         if(melhor_i > dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
-            
+            dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm--;
             dias[melhor_d].rotas[melhor_a].tempo_pm +=  melhor_delta1;
         }else{
 
@@ -568,17 +614,19 @@ bool Vizinhancas::inter_shift10(Solucao &s){
         //funcao objetivo
         s.set_fo(s.get_fo() + melhor_delta);
 
-
         //efetivar troca
         dias[melhor_e].rotas[melhor_b].sequencia.insert(dias[melhor_e].rotas[melhor_b].sequencia.begin() + melhor_j, dias[melhor_d].rotas[melhor_a].sequencia[melhor_i]);
         dias[melhor_d].rotas[melhor_a].sequencia.erase(dias[melhor_d].rotas[melhor_a].sequencia.begin() + melhor_i);
-        
+
+
         houve_melhoria_rotas = 1;
 
-        //debug
-        cout << "alt feitas:" << endl;
-        printa(dias[melhor_d].rotas[melhor_a]);
-        printa(dias[melhor_e].rotas[melhor_b]);
+        /*
+        cout << "rotas dps: ";
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        getchar();
+        */
     }
 
     return houve_melhoria_rotas;
@@ -586,7 +634,7 @@ bool Vizinhancas::inter_shift10(Solucao &s){
 
 bool Vizinhancas::inter_swap11(Solucao &s){
 
-    auto dias = s.get_dias_planejamento();
+    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     bool houve_melhoria_rotas = 0;
     double delta, 
     melhor_delta = 0, melhor_delta1, melhor_delta2;                 
@@ -681,38 +729,45 @@ bool Vizinhancas::inter_swap11(Solucao &s){
     }
 
     if (melhor_delta < -double(EPSILON)){
-        
-        
-        if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
 
+        //debug
+        /*
+        cout << "inter swap11" << endl;
+        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        cout << "rotas antes: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        */
+
+        if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
             dias[melhor_e].rotas[melhor_b].tempo_pm += melhor_delta2;
-        
+            
         }else{ 
             dias[melhor_e].rotas[melhor_b].tempo_am += melhor_delta2;
-            dias[melhor_e].rotas[melhor_b].qtd_pacientes_am++;
         }
         dias[melhor_e].rotas[melhor_b].tempo_total += melhor_delta2;
 
 
         if(melhor_i > dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
-            
             dias[melhor_d].rotas[melhor_a].tempo_pm += melhor_delta1;
+            
         }else{
 
             dias[melhor_d].rotas[melhor_a].tempo_am += melhor_delta1;
-            dias[melhor_d].rotas[melhor_a].qtd_pacientes_am--;
         }
         dias[melhor_d].rotas[melhor_a].tempo_total += melhor_delta1;
         
         s.set_fo(s.get_fo() + melhor_delta);
-
-        //efetivar troca--------------------------------------------------
         std::swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i], dias[melhor_e].rotas[melhor_b].sequencia[melhor_j]);
-
         houve_melhoria_rotas = 1;
+
+        /*
+        cout << "rotas dps: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        getchar();
+        */
     }
-    //confere(dias[melhor_d].rotas[melhor_a]);
-    //confere(dias[melhor_e].rotas[melhor_b]);
 
     return houve_melhoria_rotas;
 }
@@ -721,7 +776,7 @@ bool Vizinhancas::inter_swap11(Solucao &s){
 bool Vizinhancas::inter_swap22(Solucao &s){
 
     bool houve_melhoria_rotas = 0;
-    auto dias = s.get_dias_planejamento();
+    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     double delta, melhor_delta = 0;
     double melhor_delta1, melhor_delta2;                 
     int melhor_i, melhor_j;       
@@ -822,8 +877,14 @@ bool Vizinhancas::inter_swap22(Solucao &s){
 
     if (melhor_delta < -double(EPSILON)){
 
-        //custos-----------------------------------------
-        
+        //debug
+        /*
+        cout << "inter swap22" << endl;
+        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        cout << "rotas antes: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        */
         //rota 2
         if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
 
@@ -854,27 +915,38 @@ bool Vizinhancas::inter_swap22(Solucao &s){
         std::swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i+1], dias[melhor_e].rotas[melhor_b].sequencia[melhor_j+1]);
 
         houve_melhoria_rotas = 1;
-    }
 
-    //confere(dias[melhor_d].rotas[melhor_a]);
-    //confere(dias[melhor_e].rotas[melhor_b]);
+        //debug
+        /*
+        cout << "rotas dps: " << endl;
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        getchar();
+        */
+    }
 
     return houve_melhoria_rotas;
 }
 
-void Vizinhancas::printa(Rota& r){
+void Vizinhancas::printa(Rota& r, int mi, int mj){
 
-    double t_total = 0;
-    double t_am = 0;
-    double t_pm = 0;
-    int qtd_paci_am = 0;
-    int marca_tarde = 0;
-    bool para_contagem = 0;
-
+    const std::string VERMELHO = "\033[31m";
+    const std::string AZUL = "\033[34m";
+    const std::string RESET = "\033[0m";
 
     for(int i = 0; i < r.sequencia.size(); i++){
 
-        cout << r.sequencia[i] << " ";
+        if(i == mi){  
+            cout << VERMELHO <<  "(" << i << ")" << r.sequencia[i] << " ";
+            cout << RESET;    
+
+        }else if(i == mj){
+            cout << AZUL <<  "(" << i << ")" << r.sequencia[i] << " ";
+            cout << RESET;    
+            
+        }else{
+            cout << "(" << i << ")" << r.sequencia[i] << " ";
+        }
     }
     cout << endl;
 }

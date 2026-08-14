@@ -18,7 +18,8 @@ class Solucao{
         void set_fo(double fo);
         
         int get_quantidade_dias() const;                  
-        const std::vector<Rotas_diarias>& get_dias_planejamento() const;
+        std::vector<Rotas_diarias>& get_dias_planejamento();
+        std::vector<Rotas_diarias> get_dias_planejamento_estatico();
         double calcula_fo();
         double get_fo() const;
         void exibe_solucao() const;
