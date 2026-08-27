@@ -730,15 +730,6 @@ bool Vizinhancas::inter_swap11(Solucao &s){
 
     if (melhor_delta < -double(EPSILON)){
 
-        //debug
-        /*
-        cout << "inter swap11" << endl;
-        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
-        cout << "rotas antes: " << endl;
-        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
-        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
-        */
-
         if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
             dias[melhor_e].rotas[melhor_b].tempo_pm += melhor_delta2;
             
@@ -760,13 +751,6 @@ bool Vizinhancas::inter_swap11(Solucao &s){
         s.set_fo(s.get_fo() + melhor_delta);
         std::swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i], dias[melhor_e].rotas[melhor_b].sequencia[melhor_j]);
         houve_melhoria_rotas = 1;
-
-        /*
-        cout << "rotas dps: " << endl;
-        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
-        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
-        getchar();
-        */
     }
 
     return houve_melhoria_rotas;
@@ -928,25 +912,3 @@ bool Vizinhancas::inter_swap22(Solucao &s){
     return houve_melhoria_rotas;
 }
 
-void Vizinhancas::printa(Rota& r, int mi, int mj){
-
-    const std::string VERMELHO = "\033[31m";
-    const std::string AZUL = "\033[34m";
-    const std::string RESET = "\033[0m";
-
-    for(int i = 0; i < r.sequencia.size(); i++){
-
-        if(i == mi){  
-            cout << VERMELHO <<  "(" << i << ")" << r.sequencia[i] << " ";
-            cout << RESET;    
-
-        }else if(i == mj){
-            cout << AZUL <<  "(" << i << ")" << r.sequencia[i] << " ";
-            cout << RESET;    
-            
-        }else{
-            cout << "(" << i << ")" << r.sequencia[i] << " ";
-        }
-    }
-    cout << endl;
-}
