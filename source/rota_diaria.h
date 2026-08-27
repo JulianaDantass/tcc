@@ -33,12 +33,12 @@ class Rotas_diarias{
         int visita_possivel(int agente, double custo_total);
         int ultimo_no_rota(int ag);
         int dia_encerrado();
-        int get_turno(int a);
         double get_tempo_total_dia();
 
         double get_tempo_disponivel_am(int ag);
         double get_tempo_disponivel_pm(int ag);
-        void finaliza_turno(int ag, double valor);
+        int get_turno(int ag);
+        void finaliza_turno(int ag, double volta_posto);
         int troca_turno(int ag, double dist_volta_posto);
         void retroceder_turno(int ag);
         void avancar_turno(int ag);
