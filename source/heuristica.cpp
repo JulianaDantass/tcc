@@ -17,7 +17,6 @@ using namespace std;
 #define QTD_DIAS_PLANEJAMENTO 30
 #define QTD_VIZINHANCAS_INTER 3 
 #define QTD_VIZINHANCAS_INTRA 3
-#define ILS_EXECUCOES 1//50
 #define NUMERO_AGENTES 5 
 #define DURACAO 0.25
 #define EPSILON  0.0001
