@@ -12,6 +12,30 @@ Vizinhancas::Vizinhancas(const Instancia *d){
     this->dados = d;
 }
 
+void Vizinhancas::printa(Rota& r, int melhor_paciente, int melhor_posicao){
+
+    const std::string VERMELHO = "\033[31m";
+    const std::string AZUL = "\033[34m";
+    const std::string RESET = "\033[0m";
+
+
+    for(int i = 0; i < r.sequencia.size(); i++){
+
+        if(i == melhor_paciente and melhor_paciente != -1){  
+            cout << VERMELHO <<  "(" << i << ")" << r.sequencia[i] << " ";
+            cout << RESET;    
+
+        }else if(i == melhor_posicao and melhor_posicao != -1){
+            cout << VERMELHO <<  "(" << i << ")" << r.sequencia[i] << " ";
+            cout << RESET;    
+            
+        }else{
+            cout << "(" << i << ")" << r.sequencia[i] << " ";
+        }
+    }
+    cout << endl;
+}
+
 bool Vizinhancas::intra_reinsertion(Solucao &s){
 
     bool houve_melhoria_rotas = 0;
@@ -117,6 +141,7 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
                         -dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_j]];
 
         
+        //tem que checar se essa posicao está certa
         //posicao da tarde
         if(melhor_j > dias[melhor_d].rotas[melhor_a].qtd_pacientes_am+1){
 
@@ -766,10 +791,16 @@ bool Vizinhancas::inter_swap22(Solucao &s){
     int melhor_i, melhor_j;       
     int melhor_a, melhor_b, melhor_d, melhor_e;
 
+    
 
 	for(int d = 0; d < dias.size(); d++){   
         for(int a = 0; a < dias[d].rotas.size(); a++){
+            //printa(dias[d].rotas[a], -1, -1);
             const auto& rota1 = dias[d].rotas[a].sequencia;
+
+            if(rota1.size() <= 3){
+                continue;
+            }
             
             //i representa o inicio do par do agente a e do dia d
             for(int i = 1; i < rota1.size()-2; i++){
@@ -785,19 +816,27 @@ bool Vizinhancas::inter_swap22(Solucao &s){
 
                 for(int e = 0; e < dias.size(); e++){
                     for(int b = 0; b < dias[e].rotas.size(); b++){
-                        const auto& rota2 = dias[e].rotas[b].sequencia;
 
+                        const auto& rota2 = dias[e].rotas[b].sequencia;
+                        //printa(dias[e].rotas[b], -1, -1);
                         //se for a mesma rota, n vamos fzr nd 
                         if(dias[d].rotas[a].id_rota == dias[e].rotas[b].id_rota){ 
                             continue;
                         }
-
+                        if(rota2.size() <= 3){
+                            continue;
+                        }
                         //j representa o inicio do par do agente b e do dia e
                         for(int j = 1; j < rota2.size()-2; j++){
 
                             //se o indice atual ou o próximo for a sede, nao pode 
                             if(rota2[j] == 0 or rota2[j+1] == 0){
                                 continue;
+                            }
+                            
+                            //se a rota não tem pacientes suficientes, então encerramos esse laço
+                            if( (j+2) >= rota2.size()){
+                                break;
                             }
 
                             double necessario_r2 = -dados->matriz_distancias[rota2[j-1]][rota2[j]]
@@ -862,13 +901,13 @@ bool Vizinhancas::inter_swap22(Solucao &s){
     if (melhor_delta < -double(EPSILON)){
 
         //debug
-        /*
+        
         cout << "inter swap22" << endl;
         cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
         cout << "rotas antes: " << endl;
-        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
-        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
-        */
+        //printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        //printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        
         //rota 2
         if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
 

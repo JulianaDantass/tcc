@@ -178,8 +178,33 @@ void Rotas_diarias::retroceder_turno(int ag){
 
 void Rotas_diarias::avancar_turno(int ag){
 
-    turno[ag]--;
+    turno[ag]++;
 }
+
+
+void Rotas_diarias::printa_rota(int ag, int a, int b){
+
+    const std::string VERMELHO = "\033[31m";
+    const std::string AZUL = "\033[34m";
+    const std::string RESET = "\033[0m";
+
+    for(int i = 0; i < rotas[ag].sequencia.size(); i++){
+
+        if(i == a and i != -1){  
+            std::cout << VERMELHO <<  "(" << i << ")" << rotas[ag].sequencia[i] << " ";
+            std::cout << RESET;    
+
+        }else if(i == b and b != -1){
+            std::cout << VERMELHO <<  "(" << i << ")" << rotas[ag].sequencia[i] << " ";
+            std::cout << RESET;    
+            
+        }else{
+            std::cout << "(" << i << ")" << rotas[ag].sequencia[i] << " ";
+        }
+    }
+    std::cout << std::endl;
+}
+
 
 void Rotas_diarias::exibir_dia() const{
     

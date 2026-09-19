@@ -97,7 +97,7 @@ for id_no, qtd in ruas_por_id:
         min_lat = bounds['minlat'];
         max_lat = bounds['maxlat'];
         min_lon = bounds['minlon'];
-        max_lon = bounds['minlon'];
+        max_lon = bounds['maxlon'];
 
         #tirando a média da lat e long da rua
         media_lon = (min_lon+max_lon) / 2.0

@@ -43,6 +43,7 @@ class Rotas_diarias{
         void retroceder_turno(int ag);
         void avancar_turno(int ag);
         
+        void printa_rota(int ag, int a, int b);
         void exibir_dia() const;
 };
 
