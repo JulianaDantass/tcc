@@ -4,8 +4,9 @@
 #include <vector> 
 #include "instancia.h"
 #include "heuristica.h"
+#include "resultados.h"
+    
 
-using namespace std;    
 
 
 int main(int argc, char** argv){
@@ -17,8 +18,18 @@ int main(int argc, char** argv){
 
     }else if(argc >= 2){
         
+        std::string salvar_solucao_manual = "resultados/solucao_manual_instancia1.csv";
+        std::string local_instancia1 = "instancias/instancia1.csv";
+        
         Instancia dados;
-        string filename = string(argv[1]);
+        Resultados resultado;
+
+        //carrega os dados do csv
+        resultado.carregar_csv(local_instancia1);
+        //salva solucao manual em csv
+        resultado.salvar_solucao_manual_csv(salvar_solucao_manual);
+
+        std::string filename = string(argv[1]);
         int retorno = dados.ler_instancia(filename);
         
         if(retorno != -1){

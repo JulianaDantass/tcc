@@ -21,19 +21,23 @@ Rotas_diarias::Rotas_diarias(int n_agentes){
     }
 } 
 
-//deslocamento é a distancia entre o ultimo paciente da rota e o paciente que será adicionado
-int Rotas_diarias::adicionar_visita(int &p, int &agente, double &deslocamento, double &t_volta_posto) {
+/*
+adiciona um paciente (inteiro p) à rota do agente a
+d é a distancia entre o ultimo paciente da rota e o paciente p
+t_volta_posto é a distancia de p ao posto
+*/
+int Rotas_diarias::adicionar_visita(int &p, int &a, double &d, double &t_volta_posto) {
     
     double t_chegada;
  
     //retorno q significa que o agente encerrou o dia
-    if(turno[agente] == 3){
+    if(turno[a] == 3){
         return 1; 
     }
 
     //ve se é possivel visitar e voltar pro posto
-    double custo_total = deslocamento + DURACAO + t_volta_posto;
-    int eh_impossivel = visita_possivel(agente, custo_total);
+    double custo_total = d + DURACAO + t_volta_posto;
+    int eh_impossivel = visita_possivel(a, custo_total);
 
     //se não é possivel, tem retorno 1 ou 2
     if(eh_impossivel > 0){
@@ -41,19 +45,19 @@ int Rotas_diarias::adicionar_visita(int &p, int &agente, double &deslocamento, d
     }else{
 
         //somando o tempo gasto
-        rotas[agente].tempo_total += custo_total - t_volta_posto; 
+        rotas[a].tempo_total += custo_total - t_volta_posto; 
 
         //colocando o paciente na rota
-        rotas[agente].sequencia.push_back(p);
+        rotas[a].sequencia.push_back(p);
 
-        if(turno[agente] == 1){
-            rotas[agente].qtd_pacientes_am += 1;
-            rotas[agente].tempo_am += custo_total - t_volta_posto;
+        if(turno[a] == 1){
+            rotas[a].qtd_pacientes_am += 1;
+            rotas[a].tempo_am += custo_total - t_volta_posto;
             
 
-        }else if(turno[agente] == 2){
-            rotas[agente].qtd_pacientes_pm += 1;
-            rotas[agente].tempo_pm += custo_total - t_volta_posto;
+        }else if(turno[a] == 2){
+            rotas[a].qtd_pacientes_pm += 1;
+            rotas[a].tempo_pm += custo_total - t_volta_posto;
         } 
 
         return 0;

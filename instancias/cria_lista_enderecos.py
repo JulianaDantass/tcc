@@ -21,7 +21,7 @@ ruas_com_numero = [
 ('Rua João Nobre', [457, 328])
 ]
 
-
+#o segundo número é a quantidade de casas
 ruas_por_id = [ 
 (115226185, 23), #Rua Severino Elias Justino:
 (787639564, 54), #Rua Beatriz Maria E. Santo:
@@ -29,7 +29,6 @@ ruas_por_id = [
 (69288619, 3),   #R. Severino Patrício da Silva
 (787639569, 25), #R. Mauricio Salustiano
 (115226613, 9)  #rua tavares cavalcante
-#(, 6)             #travessa juarez távora
 ]   
 
 
