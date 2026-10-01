@@ -24,13 +24,11 @@
 
 using namespace std;
 
-#define MAX_ITER 300
-#define QTD_DIAS_PLANEJAMENTO 30
-#define QTD_VIZINHANCAS_INTER 3 
-#define QTD_VIZINHANCAS_INTRA 3
-#define NUMERO_AGENTES 5 
-#define DURACAO 0.25
 #define EPSILON  0.0001
+#define QTD_VIZINHANCAS_INTER 3
+#define QTD_VIZINHANCAS_INTRA 3
+#define MAX_ITER 300
+
 
 Heuristica::Heuristica(Instancia* dados_atuais){
 	
@@ -41,13 +39,13 @@ Heuristica::Heuristica(Instancia* dados_atuais){
 // o vizinho mais próximo é utilizado como guloso
 Solucao Heuristica::solucao_inicial(){
 
-	Solucao si(QTD_DIAS_PLANEJAMENTO);
+	Solucao si(dados->qtd_dias_planejamento);
 
-	// Cria um vetor com N elementos, preenchendo todos eles com uma cópia de Rotas_diarias(NUMERO_AGENTES)
-	std::vector<Rotas_diarias> dias(QTD_DIAS_PLANEJAMENTO, Rotas_diarias(NUMERO_AGENTES));
+	// Cria um vetor com N elementos, preenchendo todos eles com uma cópia de Rotas_diarias(dados->numero_agentes)
+	std::vector<Rotas_diarias> dias(dados->qtd_dias_planejamento, Rotas_diarias(dados->numero_agentes));
 	
 	//criando um vetor de booleano pra saber se o paciente já foi inserido
-	int tam_vetor = (dados->q_clientes);
+	int tam_vetor = (dados->quantidade_clientes);
 	//int tam_vetor = 307;
 	std::vector<bool> pacientes_inseridos(tam_vetor, false);
 
@@ -66,7 +64,7 @@ Solucao Heuristica::solucao_inicial(){
 		bool flag_dia_encerrado = 0;
 
 		//adicionando o paciente prioritario que oferece menor distancia ao agente considerando sua rota 
-		for(int i = 0; i < NUMERO_AGENTES; i++){
+		for(int i = 0; i < dados->numero_agentes; i++){
 			if(cont_priori_servidos >= dados->clientes_prioritarios.size()){
 				flag_priori_servidos = 1;
 				break;
@@ -87,7 +85,7 @@ Solucao Heuristica::solucao_inicial(){
 				int id = dados->clientes_prioritarios[j];
 
 				if (!pacientes_inseridos[id]) {
-					double distancia = dados->matriz_distancias[ult_loc][id]; 
+					double distancia = dados->matriz_tempo[ult_loc][id]; 
 					indice_e_distancia.push_back(pair<int,double>(j, distancia));
 				}
 			}
@@ -110,7 +108,7 @@ Solucao Heuristica::solucao_inicial(){
 			pair<int,double> paciente_sorteado = indice_e_distancia[indice_sorteado];
 			
 			int id = dados->clientes_prioritarios[paciente_sorteado.first];
-			double dist_volta_posto = dados->matriz_distancias[id][0];
+			double dist_volta_posto = dados->matriz_tempo[id][0];
 			int retorno_adicionar = dia->adicionar_visita(dados->clientes_prioritarios[paciente_sorteado.first], i, paciente_sorteado.second, dist_volta_posto);
 
 			//se o retorno 1, 2 ou 3 significa que nao deu certo a inserção pq violaria o horario e o agente teve que retornar ao posto
@@ -148,7 +146,7 @@ Solucao Heuristica::solucao_inicial(){
 		bool flag_npriori_servidos = 0;
 		
 		//adicionando o paciente n prioritario que oferece menor distancia ao agente considerando sua rota 
-		for(int i = 0; i < NUMERO_AGENTES; i++){
+		for(int i = 0; i < dados->numero_agentes; i++){
 
 			if(cont_npriori_servidos >= dados->clientes_nao_prioritarios.size()){
 				flag_npriori_servidos = 1;
@@ -170,7 +168,7 @@ Solucao Heuristica::solucao_inicial(){
 				int id = dados->clientes_nao_prioritarios[j];
 
 				if (!pacientes_inseridos[id]) {
-					double distancia = dados->matriz_distancias[ult_loc][id]; 
+					double distancia = dados->matriz_tempo[ult_loc][id]; 
 					indice_e_distancia.push_back(pair<int,double>(j, distancia));
 				}
 			}
@@ -193,7 +191,7 @@ Solucao Heuristica::solucao_inicial(){
 			pair<int,double> paciente_sorteado = indice_e_distancia[indice_sorteado];
 			
 			int id = dados->clientes_nao_prioritarios[paciente_sorteado.first];
-			double dist_volta_posto = dados->matriz_distancias[id][0];
+			double dist_volta_posto = dados->matriz_tempo[id][0];
 			int retorno_adicionar = dia->adicionar_visita(dados->clientes_nao_prioritarios[paciente_sorteado.first], i, paciente_sorteado.second, dist_volta_posto);
 
 			if(retorno_adicionar > 0){
@@ -218,11 +216,11 @@ Solucao Heuristica::solucao_inicial(){
 		//se todos os clientes nao prioritarios foram servidos, adiciona o ultimo dia na solução 
 		if(flag_npriori_servidos){
 				 //adicionamos a volta ao posto caso nao tenha sido adicionada
-				for(int j = 0; j < NUMERO_AGENTES; j++){
+				for(int j = 0; j < dados->numero_agentes; j++){
 					
 				 	int ult_loc = dia->ultimo_no_rota(j);
 				 	if(ult_loc != 0){	
-						dia->finaliza_turno(j, dados->matriz_distancias[ult_loc][0]);
+						dia->finaliza_turno(j, dados->matriz_tempo[ult_loc][0]);
 				 	}
 				 }
 			si.adiciona_dia(dias[cont_dias]);
@@ -249,7 +247,7 @@ void Heuristica::ILS_RVND(){
 		s_local = s;
 
 		int iterILS = 0;
-        int MaxIterILS = dados->q_clientes;
+        int MaxIterILS = dados->quantidade_clientes;
         while (iterILS <= MaxIterILS) {
 			//cout << "iterILS: " << iterILS << "/" << MaxIterILS << endl; 
             
@@ -367,7 +365,7 @@ void Heuristica::perturbacao(Solucao &s){
     //const std::string RESET = "\033[0m";
     std::random_device rd;  
     std::mt19937 gen(rd()); 
-    std::uniform_int_distribution<> distrib(1, NUMERO_AGENTES);
+    std::uniform_int_distribution<> distrib(1, dados->numero_agentes);
 
     int qtd_movimentos = distrib(gen);
 
@@ -433,10 +431,10 @@ void Heuristica::perturbacao(Solucao &s){
 		const auto& rota2 = rotas[dia2_sorteado].rotas[rota2_sorteada].sequencia;
 
 		//necessario 1 é o que [e necessario]
-		double necessario1 = -DURACAO   
-                        	+dados->matriz_distancias[rota1[i_sorteado-1]][rota1[i_sorteado+1]] 
-                        	-dados->matriz_distancias[rota1[i_sorteado-1]][rota1[i_sorteado]] 
-                        	-dados->matriz_distancias[rota1[i_sorteado]][rota1[i_sorteado+1]];
+		double necessario1 = -dados->duracao_visita_h   
+                        	+dados->matriz_tempo[rota1[i_sorteado-1]][rota1[i_sorteado+1]] 
+                        	-dados->matriz_tempo[rota1[i_sorteado-1]][rota1[i_sorteado]] 
+                        	-dados->matriz_tempo[rota1[i_sorteado]][rota1[i_sorteado+1]];
 
 		 //teoricamente tirar um paciente não seria problema mas checo:
 		 while(1){
@@ -457,10 +455,10 @@ void Heuristica::perturbacao(Solucao &s){
                     }
             }
 		}
-		double necessario2 = DURACAO  
-                            -dados->matriz_distancias[rota2[j_sorteado-1]][rota2[j_sorteado]] 
-                            +dados->matriz_distancias[rota2[j_sorteado-1]][rota1[i_sorteado]]
-                            +dados->matriz_distancias[rota1[i_sorteado]][rota2[j_sorteado]];
+		double necessario2 = dados->duracao_visita_h   
+                            -dados->matriz_tempo[rota2[j_sorteado-1]][rota2[j_sorteado]] 
+                            +dados->matriz_tempo[rota2[j_sorteado-1]][rota1[i_sorteado]]
+                            +dados->matriz_tempo[rota1[i_sorteado]][rota2[j_sorteado]];
 		bool i_adicionado = 0;					 
 			
 		//posicao da tarde
@@ -470,13 +468,13 @@ void Heuristica::perturbacao(Solucao &s){
 			if(rotas[dia2_sorteado].get_tempo_disponivel_pm(rota2_sorteada) < necessario1){    
 				
 				//disponivel na tarde é insuficiente, entao tem que adicionar mais um dia
-				Rotas_diarias r = Rotas_diarias(NUMERO_AGENTES);
+				Rotas_diarias r = Rotas_diarias(dados->numero_agentes);
 				int primeira_agente = 0;
-				double posto_casa1 = dados->matriz_distancias[0][id_sorteado];
-				double casas1_posto = dados->matriz_distancias[id_sorteado][0];
+				double posto_casa1 = dados->matriz_tempo[0][id_sorteado];
+				double casas1_posto = dados->matriz_tempo[id_sorteado][0];
 
 				r.adicionar_visita(id_sorteado, primeira_agente, posto_casa1, casas1_posto);
-				r.finaliza_turno(primeira_agente, dados->matriz_distancias[id_sorteado][0]);
+				r.finaliza_turno(primeira_agente, dados->matriz_tempo[id_sorteado][0]);
 				s.adiciona_dia(r);
 				rotas[dia2_sorteado].rotas[rota2_sorteada].tempo_am += posto_casa1 + casas1_posto;
 				rotas[dia2_sorteado].rotas[rota2_sorteada].tempo_total += posto_casa1 + casas1_posto;
@@ -494,8 +492,8 @@ void Heuristica::perturbacao(Solucao &s){
 				if(rotas[dia2_sorteado].rotas[rota2_sorteada].qtd_pacientes_pm == 0){
 					
 					//a tarde está com 0 pacientes	
-					double posto_casa1 = dados->matriz_distancias[0][id_sorteado];
-					double casas1_posto = dados->matriz_distancias[id_sorteado][0];
+					double posto_casa1 = dados->matriz_tempo[0][id_sorteado];
+					double casas1_posto = dados->matriz_tempo[id_sorteado][0];
 					rotas[dia2_sorteado].avancar_turno(rota2_sorteada);
 					rotas[dia2_sorteado].adicionar_visita(id_sorteado, rota2_sorteada, posto_casa1, casas1_posto);
 					rotas[dia2_sorteado].rotas[rota2_sorteada].tempo_pm += posto_casa1 + casas1_posto;
@@ -505,10 +503,10 @@ void Heuristica::perturbacao(Solucao &s){
 					if(rotas[dia2_sorteado].get_tempo_disponivel_pm(rota2_sorteada) < necessario1){
 						
 						//a tarde não tem tempo suficiente
-						Rotas_diarias r = Rotas_diarias(NUMERO_AGENTES);
+						Rotas_diarias r = Rotas_diarias(dados->numero_agentes);
 						int primeira_agente = 0;
-						r.adicionar_visita(id_sorteado, primeira_agente, dados->matriz_distancias[0][id_sorteado], dados->matriz_distancias[id_sorteado][0]);
-						r.finaliza_turno(primeira_agente, dados->matriz_distancias[id_sorteado][0]);
+						r.adicionar_visita(id_sorteado, primeira_agente, dados->matriz_tempo[0][id_sorteado], dados->matriz_tempo[id_sorteado][0]);
+						r.finaliza_turno(primeira_agente, dados->matriz_tempo[id_sorteado][0]);
 						s.adiciona_dia(r);
 						i_adicionado = 1; 
 					}else{
@@ -591,7 +589,7 @@ void Heuristica::verifica_fo( Solucao &s){
 				if(dias[i].rotas[j].sequencia[k] == 0 or dias[i].rotas[j].sequencia[k+1] == 0){
 					qtd_zeros++;
 				}
-				double t = dados->matriz_distancias[dias[i].rotas[j].sequencia[k]][dias[i].rotas[j].sequencia[k+1]];
+				double t = dados->matriz_tempo[dias[i].rotas[j].sequencia[k]][dias[i].rotas[j].sequencia[k+1]];
 				t_total += t;
 				if(qtd_zeros > 2){
 					t_pm += t;

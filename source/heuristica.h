@@ -7,20 +7,12 @@
 
 #define QTD_DIAS_PLANEJAMENTO 30
 
-struct InsercaoInfo
-{
-	int no_candidato = -1; // no k a ser inserido
-	int aresta_removida = -1; // aresta {i,j} na qual o no k sera inserido
-	double custo =  1e9; // delta ao inserir k na aresta {i,j}
-
-	InsercaoInfo(int id, int a, double c) : no_candidato(id), aresta_removida(a), custo(c) {}
-};
 
 class Heuristica{
 	public:
 		Heuristica(Instancia* d);
 		~Heuristica();
-		vector<InsercaoInfo> calcular_custo_insercao(Rotas_diarias* d, vector<bool> &pacientes_inseridos);
+		
 		Solucao solucao_inicial();
 		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
 		void perturbacao(Solucao &s);
@@ -33,7 +25,8 @@ class Heuristica{
 		void printa_solucao(Rota& r, int melhor_paciente, int melhor_posicao);
 
 	private:
-		vector<vector<InsercaoInfo>> custos_insercao;
+		int qtd_vizinhancas_inter;
+		int qtd_vizinhancas_intra;
 		Instancia *dados;
 		Solucao s{QTD_DIAS_PLANEJAMENTO};
 		Solucao s_local{QTD_DIAS_PLANEJAMENTO};

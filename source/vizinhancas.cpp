@@ -74,9 +74,9 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
                     if(j > dias[d].rotas[a].qtd_pacientes_am+1 and i <= dias[d].rotas[a].qtd_pacientes_am){
                         
                         double necessario = DURACAO 
-                                            + dados->matriz_distancias[seq[j-1]][seq[i]]
-                                            + dados->matriz_distancias[seq[i]][seq[j]]  
-                                            - dados->matriz_distancias[seq[j-1]][seq[j]];
+                                            + dados->matriz_tempo[seq[j-1]][seq[i]]
+                                            + dados->matriz_tempo[seq[i]][seq[j]]  
+                                            - dados->matriz_tempo[seq[j-1]][seq[j]];
 
                         //mov invalido 
                         if(disponivel_pm < necessario){   
@@ -88,9 +88,9 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
                     else if (j <= dias[d].rotas[a].qtd_pacientes_am+1 and i > dias[d].rotas[a].qtd_pacientes_am+1){
                        
                         double necessario = DURACAO
-                                            + dados->matriz_distancias[seq[i-1]][seq[i+1]]
-                                            + dados->matriz_distancias[seq[i]][seq[j]]  
-                                            - dados->matriz_distancias[seq[j-1]][seq[j]];
+                                            + dados->matriz_tempo[seq[i-1]][seq[i+1]]
+                                            + dados->matriz_tempo[seq[i]][seq[j]]  
+                                            - dados->matriz_tempo[seq[j-1]][seq[j]];
                         
                         //mov invalido
                         if(disponivel_am < necessario){ 
@@ -98,9 +98,9 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
                         }
                     }
 
-                    delta = + dados->matriz_distancias[seq[i-1]][seq[i+1]] + dados->matriz_distancias[seq[j-1]][seq[i]] 
-                            + dados->matriz_distancias[seq[i]][seq[j]]     - dados->matriz_distancias[seq[i-1]][seq[i]] 
-                            - dados->matriz_distancias[seq[i]][seq[i+1]]   - dados->matriz_distancias[seq[j-1]][seq[j]];
+                    delta = + dados->matriz_tempo[seq[i-1]][seq[i+1]] + dados->matriz_tempo[seq[j-1]][seq[i]] 
+                            + dados->matriz_tempo[seq[i]][seq[j]]     - dados->matriz_tempo[seq[i-1]][seq[i]] 
+                            - dados->matriz_tempo[seq[i]][seq[i+1]]   - dados->matriz_tempo[seq[j-1]][seq[j]];
                 
                     // se delta for menor que o melhor delta atual significa que melhorou a solucao
                     if (delta < melhor_delta){ 
@@ -132,13 +132,13 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
         auto& seq = dias[melhor_d].rotas[melhor_a].sequencia;
 
         //alterando os tempos
-        double dif_i = +dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i+1]] 
-                        -dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i]] 
-                        -dados->matriz_distancias[seq[melhor_i]][seq[melhor_i+1]];
+        double dif_i = +dados->matriz_tempo[seq[melhor_i-1]][seq[melhor_i+1]] 
+                        -dados->matriz_tempo[seq[melhor_i-1]][seq[melhor_i]] 
+                        -dados->matriz_tempo[seq[melhor_i]][seq[melhor_i+1]];
         
-        double dif_j = +dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_i]] 
-                        +dados->matriz_distancias[seq[melhor_i]][seq[melhor_j]]  
-                        -dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_j]];
+        double dif_j = +dados->matriz_tempo[seq[melhor_j-1]][seq[melhor_i]] 
+                        +dados->matriz_tempo[seq[melhor_i]][seq[melhor_j]]  
+                        -dados->matriz_tempo[seq[melhor_j-1]][seq[melhor_j]];
 
         
         //tem que checar se essa posicao está certa
@@ -234,9 +234,9 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
                 }
 
                 double duracao_i = DURACAO;
-                delta = -dados->matriz_distancias[seq[i-1]][seq[i]] 
-                        -dados->matriz_distancias[seq[i+1]][seq[i+2]] 
-                        +dados->matriz_distancias[seq[i-1]][seq[i+2]];
+                delta = -dados->matriz_tempo[seq[i-1]][seq[i]] 
+                        -dados->matriz_tempo[seq[i+1]][seq[i+2]] 
+                        +dados->matriz_tempo[seq[i-1]][seq[i+2]];
                 
                 for(int j = 1; j < tam_rota-1; j++){
 
@@ -245,9 +245,9 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
                     }
 
                     double necessario = delta + (2*duracao_i)
-                                        -dados->matriz_distancias[seq[j-1]][seq[j]] 
-                                        +dados->matriz_distancias[seq[j-1]][seq[i]]
-                                        +dados->matriz_distancias[seq[i+1]][seq[j]];
+                                        -dados->matriz_tempo[seq[j-1]][seq[j]] 
+                                        +dados->matriz_tempo[seq[j-1]][seq[i]]
+                                        +dados->matriz_tempo[seq[i+1]][seq[j]];
                     
                     //para posição da tarde j, 2 pacientes i do turno da manhã  
                     if(j > dias[d].rotas[a].qtd_pacientes_am+1 and i < dias[d].rotas[a].qtd_pacientes_am){
@@ -294,13 +294,13 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
         //alterando os tempos
         auto& seq = dias[melhor_d].rotas[melhor_a].sequencia;
 
-        double dif_i = -dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i]] 
-                       -dados->matriz_distancias[seq[melhor_i+1]][seq[melhor_i+2]] 
-                       +dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i+2]];
+        double dif_i = -dados->matriz_tempo[seq[melhor_i-1]][seq[melhor_i]] 
+                       -dados->matriz_tempo[seq[melhor_i+1]][seq[melhor_i+2]] 
+                       +dados->matriz_tempo[seq[melhor_i-1]][seq[melhor_i+2]];
         
-        double dif_j = -dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_j]] 
-                       +dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_i]]
-                       +dados->matriz_distancias[seq[melhor_i+1]][seq[melhor_j]];
+        double dif_j = -dados->matriz_tempo[seq[melhor_j-1]][seq[melhor_j]] 
+                       +dados->matriz_tempo[seq[melhor_j-1]][seq[melhor_i]]
+                       +dados->matriz_tempo[seq[melhor_i+1]][seq[melhor_j]];
 
 
         //posicao da tarde            
@@ -393,7 +393,7 @@ bool Vizinhancas::intra_exchange(Solucao &s){
                 }
 
                 
-                delta = -dados->matriz_distancias[seq[i-1]][seq[i]] - dados->matriz_distancias[seq[i]][seq[i+1]];
+                delta = -dados->matriz_tempo[seq[i-1]][seq[i]] - dados->matriz_tempo[seq[i]][seq[i+1]];
                 
                 for(int j = i+1; j < tam_rota-1; j++){
                     
@@ -401,14 +401,14 @@ bool Vizinhancas::intra_exchange(Solucao &s){
                         continue;
                     
                     }else if(i == j-1){
-                        delta = -dados->matriz_distancias[seq[i-1]][seq[i]] - dados->matriz_distancias[seq[j]][seq[j+1]]
-                                -dados->matriz_distancias[seq[i]][seq[j]]      
-                                +dados->matriz_distancias[seq[i-1]][seq[j]] + dados->matriz_distancias[seq[i]][seq[j+1]]
-                                +dados->matriz_distancias[seq[j]][seq[i]];
+                        delta = -dados->matriz_tempo[seq[i-1]][seq[i]] - dados->matriz_tempo[seq[j]][seq[j+1]]
+                                -dados->matriz_tempo[seq[i]][seq[j]]      
+                                +dados->matriz_tempo[seq[i-1]][seq[j]] + dados->matriz_tempo[seq[i]][seq[j+1]]
+                                +dados->matriz_tempo[seq[j]][seq[i]];
                     }else{
-                        delta += -dados->matriz_distancias[seq[j]][seq[j+1]] - dados->matriz_distancias[seq[j-1]][seq[j]] 
-                                 +dados->matriz_distancias[seq[i-1]][seq[j]] + dados->matriz_distancias[seq[j]][seq[i+1]] 
-                                 +dados->matriz_distancias[seq[i]][seq[j+1]] + dados->matriz_distancias[seq[j-1]][seq[i]];
+                        delta += -dados->matriz_tempo[seq[j]][seq[j+1]] - dados->matriz_tempo[seq[j-1]][seq[j]] 
+                                 +dados->matriz_tempo[seq[i-1]][seq[j]] + dados->matriz_tempo[seq[j]][seq[i+1]] 
+                                 +dados->matriz_tempo[seq[i]][seq[j+1]] + dados->matriz_tempo[seq[j-1]][seq[i]];
                     }
                 
                     // se delta for menor que o melhor delta atual significa que melhorou a solucao
@@ -442,8 +442,8 @@ bool Vizinhancas::intra_exchange(Solucao &s){
         //alteracoes do i
 
         if (melhor_i != melhor_j-1) {
-            delta = -dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_i]] - dados->matriz_distancias[seq[melhor_i]][seq[melhor_i+1]] 
-                    +dados->matriz_distancias[seq[melhor_i-1]][seq[melhor_j]] + dados->matriz_distancias[seq[melhor_j]][seq[melhor_i+1]]; 
+            delta = -dados->matriz_tempo[seq[melhor_i-1]][seq[melhor_i]] - dados->matriz_tempo[seq[melhor_i]][seq[melhor_i+1]] 
+                    +dados->matriz_tempo[seq[melhor_i-1]][seq[melhor_j]] + dados->matriz_tempo[seq[melhor_j]][seq[melhor_i+1]]; 
                                 
                 
 
@@ -453,8 +453,8 @@ bool Vizinhancas::intra_exchange(Solucao &s){
                 rota.tempo_am += delta; 
             }
 
-            delta = -dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_j]] - dados->matriz_distancias[seq[melhor_j]][seq[melhor_j+1]] 
-                    +dados->matriz_distancias[seq[melhor_i]][seq[melhor_j+1]] + dados->matriz_distancias[seq[melhor_j-1]][seq[melhor_i]]; 
+            delta = -dados->matriz_tempo[seq[melhor_j-1]][seq[melhor_j]] - dados->matriz_tempo[seq[melhor_j]][seq[melhor_j+1]] 
+                    +dados->matriz_tempo[seq[melhor_i]][seq[melhor_j+1]] + dados->matriz_tempo[seq[melhor_j-1]][seq[melhor_i]]; 
 
             if(melhor_j > rota.qtd_pacientes_am) {
                 rota.tempo_pm += delta; 
@@ -515,9 +515,9 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                 }
 
                 double necessario1 = -DURACAO   
-                        +dados->matriz_distancias[rota1[i-1]][rota1[i+1]] 
-                        -dados->matriz_distancias[rota1[i-1]][rota1[i]] 
-                        -dados->matriz_distancias[rota1[i]][rota1[i+1]];
+                        +dados->matriz_tempo[rota1[i-1]][rota1[i+1]] 
+                        -dados->matriz_tempo[rota1[i-1]][rota1[i]] 
+                        -dados->matriz_tempo[rota1[i]][rota1[i+1]];
 
 
 
@@ -548,9 +548,9 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                         for(int j = 1; j < rota2.size(); j++){
 
                             double necessario2 = DURACAO  
-                                                    -dados->matriz_distancias[rota2[j-1]][rota2[j]] 
-                                                    +dados->matriz_distancias[rota2[j-1]][rota1[i]]
-                                                    +dados->matriz_distancias[rota1[i]][rota2[j]];
+                                                    -dados->matriz_tempo[rota2[j-1]][rota2[j]] 
+                                                    +dados->matriz_tempo[rota2[j-1]][rota1[i]]
+                                                    +dados->matriz_tempo[rota1[i]][rota2[j]];
 
                              
 
@@ -679,8 +679,8 @@ bool Vizinhancas::inter_swap11(Solucao &s){
                     continue;
                 }
 
-                delta = -dados->matriz_distancias[rota1[i-1]][rota1[i]] 
-                        -dados->matriz_distancias[rota1[i]][rota1[i+1]];
+                delta = -dados->matriz_tempo[rota1[i-1]][rota1[i]] 
+                        -dados->matriz_tempo[rota1[i]][rota1[i+1]];
 
                 for(int e = 0; e < dias.size(); e++){
                     for(int b = 0; b < dias[e].rotas.size(); b++){
@@ -697,10 +697,10 @@ bool Vizinhancas::inter_swap11(Solucao &s){
                             if(rota2[j] == 0){
                                 continue;
                             }
-                            double necessario_r2 =  -dados->matriz_distancias[rota2[j]][rota2[j+1]] 
-                                                    -dados->matriz_distancias[rota2[j-1]][rota2[j]]   
-                                                    +dados->matriz_distancias[rota2[j-1]][rota1[i]]
-                                                    +dados->matriz_distancias[rota1[i]][rota2[j+1]];
+                            double necessario_r2 =  -dados->matriz_tempo[rota2[j]][rota2[j+1]] 
+                                                    -dados->matriz_tempo[rota2[j-1]][rota2[j]]   
+                                                    +dados->matriz_tempo[rota2[j-1]][rota1[i]]
+                                                    +dados->matriz_tempo[rota1[i]][rota2[j+1]];
                                 
                             
                             if(j > dias[e].rotas[b].qtd_pacientes_am){
@@ -717,8 +717,8 @@ bool Vizinhancas::inter_swap11(Solucao &s){
                             }
 
 
-                            double necessario_r1 = delta + dados->matriz_distancias[rota1[i-1]][rota2[j]]
-                                                        + dados->matriz_distancias[rota2[j]][rota1[i+1]];
+                            double necessario_r1 = delta + dados->matriz_tempo[rota1[i-1]][rota2[j]]
+                                                        + dados->matriz_tempo[rota2[j]][rota1[i+1]];
 
                             if(i > dias[d].rotas[a].qtd_pacientes_am){
                                 //mov invalido
@@ -810,9 +810,9 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                     continue;
                 }
 
-                delta = -dados->matriz_distancias[rota1[i-1]][rota1[i]]
-                        -dados->matriz_distancias[rota1[i]][rota1[i+1]]
-                        -dados->matriz_distancias[rota1[i+1]][rota1[i+2]];
+                delta = -dados->matriz_tempo[rota1[i-1]][rota1[i]]
+                        -dados->matriz_tempo[rota1[i]][rota1[i+1]]
+                        -dados->matriz_tempo[rota1[i+1]][rota1[i+2]];
 
                 for(int e = 0; e < dias.size(); e++){
                     for(int b = 0; b < dias[e].rotas.size(); b++){
@@ -839,12 +839,12 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                                 break;
                             }
 
-                            double necessario_r2 = -dados->matriz_distancias[rota2[j-1]][rota2[j]]
-                                                   -dados->matriz_distancias[rota2[j+1]][rota2[j+2]] 
-                                                   -dados->matriz_distancias[rota2[j]][rota2[j+1]] 
-                                                   +dados->matriz_distancias[rota2[j-1]][rota1[i]] 
-                                                   +dados->matriz_distancias[rota1[i]][rota1[i+1]] 
-                                                   +dados->matriz_distancias[rota1[i+1]][rota2[j+2]] ;
+                            double necessario_r2 = -dados->matriz_tempo[rota2[j-1]][rota2[j]]
+                                                   -dados->matriz_tempo[rota2[j+1]][rota2[j+2]] 
+                                                   -dados->matriz_tempo[rota2[j]][rota2[j+1]] 
+                                                   +dados->matriz_tempo[rota2[j-1]][rota1[i]] 
+                                                   +dados->matriz_tempo[rota1[i]][rota1[i+1]] 
+                                                   +dados->matriz_tempo[rota1[i+1]][rota2[j+2]] ;
                             
                             if(j > dias[e].rotas[b].qtd_pacientes_am){
 
@@ -860,9 +860,9 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                             }
 
 
-                            double necessario_r1 = delta + dados->matriz_distancias[rota1[i-1]][rota2[j]]
-                                                         + dados->matriz_distancias[rota2[j]][rota2[j+1]]
-                                                         + dados->matriz_distancias[rota2[j+1]][rota1[i+2]];
+                            double necessario_r1 = delta + dados->matriz_tempo[rota1[i-1]][rota2[j]]
+                                                         + dados->matriz_tempo[rota2[j]][rota2[j+1]]
+                                                         + dados->matriz_tempo[rota2[j+1]][rota1[i+2]];
 
                             if(i > dias[d].rotas[a].qtd_pacientes_am){
                                 //mov invalido
