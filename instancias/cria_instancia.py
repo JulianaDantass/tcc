@@ -15,7 +15,7 @@ with open('instancia.txt', 'w') as f:
     f.write(f"{N_AGENTES}\n")
     f.write(f"{DIAS_PLANEJAMENTO}\n")
     f.write(f"{DURACAO_H}\n")
-    f.write(f"{pacientes_prioritarios}\n\n")
+    f.write(" ".join(map(str, pacientes_prioritarios)) + "\n\n")
     for linha in matriz:
         f.write(" ".join(map(str, linha)) + "\n")                  
 

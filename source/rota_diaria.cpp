@@ -213,8 +213,8 @@ void Rotas_diarias::printa_rota(int ag, int a, int b){
 void Rotas_diarias::exibir_dia() const{
     
     for(int i = 0; i < rotas.size(); i++){
-        std::cout << "id: " << rotas[i].id_rota << std::endl;
-        std::cout << "qtd de nós: " << rotas[i].sequencia.size() << std::endl;
+        std::cout << "id rota: " << rotas[i].id_rota << std::endl;
+        std::cout << "qtd de nós na rota: " << rotas[i].sequencia.size() << std::endl;
     
         for(int j = 0; j < rotas[i].sequencia.size(); j++){
             std::cout << rotas[i].sequencia[j] << ", ";

@@ -17,9 +17,6 @@ ARQUIVO_SAIDA = "matriz_tempo.txt"
 NOS = "nos.txt"
 
 
-
-
-
 #Grava o dicionário de cache no arquivo .txt.
 def salvar_nos(nos):
     with open(NOS, "w", encoding="utf-8") as f:

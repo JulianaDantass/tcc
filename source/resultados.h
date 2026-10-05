@@ -7,14 +7,11 @@
 #include "instancia.h"
 
 
-struct Cliente{
-    int id;             //id na matriz de tempo
-    int microarea;      // 
-};
-
 struct Microarea{
     int id;            
+    int qtd_clientes;
     vector<int> clientes;       
+    
 };
 
 class Resultados {
@@ -33,6 +30,5 @@ class Resultados {
         int ler_csv(string caminho);
         int gerar_solucao_manual(std::string nome_entrada, std::string nome_saida);
         int salvar_solucao_manual_csv(Solucao &si, std::string nome_saida);
-        const std::map<int, std::vector<int>>& getClientesPorMicroarea() const;
-        const std::vector<Cliente>& getTodosClientes() const;
+        void printa_microareas();
 };

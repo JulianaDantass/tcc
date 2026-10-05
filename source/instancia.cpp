@@ -2,11 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <limits>
+#include <string>
 #include <vector>
 #include <algorithm> //Necessário para usar o std::replace
-#include <cstdlib>
-#include <ctime>
      
 Instancia::Instancia(){
     
@@ -23,69 +21,68 @@ int Instancia::ler_instancia (string caminho){
         return -1;
     }
 
-    std::string linha_arq;
-    int i = 0;
-    while (std::getline(arquivo, linha_arq)) {
-        cout << i << endl;
-        // Pula linhas em branco extras
-        if (linha_arq.empty()) {   
-            continue; 
-        }
-        std::stringstream ss(linha_arq);
-        int valor_int;
-        double valor;
+    arquivo >> numero_agentes;
+    arquivo >> qtd_dias_planejamento;
+    arquivo >> duracao_visita_h;
 
-        ss >> valor_int;
-        numero_agentes = valor_int;
-        ss >> valor_int;
-        qtd_dias_planejamento = valor_int;
-        ss >> valor;
-        duracao_visita_h = valor;
-    
-        std::vector<double> linha_matriz;
+    // Consome o '\n' restante na linha do duracao_h antes de usar getline
+    std::string linha;
+    std::getline(arquivo, linha);
+
+    // 2. Leitura dos pacientes prioritários
+    // Se a quantidade de linhas for igual a N_AGENTES:
+    for (int i = 0; i < numero_agentes; ++i) {
         
-        //se estivermos coletando a primeira linha, é a linha de pacientes prioritarios
-        if(i == 0){                         
-            while (ss >> valor_int) {
-                clientes_prioritarios.push_back(valor_int);
-            }
-
-        }else{
-            //c.c. é uma linha da matriz que tem vários valores 
-            while (ss >> valor) {
-                linha_matriz.push_back(valor);
-            }
-            this->matriz_tempo.push_back(linha_matriz);
+        std::stringstream ss(linha);
+        std::vector<int> linha_pacientes;
+        int val;
+        while (ss >> val) {
+            clientes_prioritarios.push_back(val);   
         }
-
-        i++; 
+        
     }
-
-    //definindo a qtd de clientes
-    quantidade_clientes = matriz_tempo.size();
-
-    //adicionando um vetor com os pacientes que restaram (nao prioritarios)
     
-    for (int i = 1; i < matriz_tempo.size(); i++) {
-		int eh_priori = 0;
-		for(int j = 0; j < this->clientes_prioritarios.size(); j++){
-			if (i == this->clientes_prioritarios[j]){
-				eh_priori = 1;
-                break;
-			}
-		}
-		if(eh_priori == 0){
-			clientes_nao_prioritarios.push_back(i);
-		}
+    if (std::getline(arquivo, linha)) {
+        std::stringstream ss(linha);
+        int id;
+        while (ss >> id) {
+            clientes_prioritarios.push_back(id);
+        }
+    }
+    // 3. Leitura da matriz (lê todas as linhas restantes até o fim do arquivo)
+    while (std::getline(arquivo, linha)) {
+        if (linha.empty()) continue;
+
+        std::stringstream ss(linha);
+        std::vector<double> linha_matriz;
+        double val;
+        while (ss >> val) {
+            linha_matriz.push_back(val);
+        }
+        
+        if (!linha_matriz.empty()) {
+            matriz_tempo.push_back(linha_matriz);
+        }
     }
 
-
+    quantidade_clientes = matriz_tempo.size();
+    for(int i = 1; i < quantidade_clientes; i++) {
+        
+        if (std::find(clientes_prioritarios.begin(), clientes_prioritarios.end(), i) == clientes_prioritarios.end()) {
+            clientes_nao_prioritarios.push_back(i);
+        }
+    }
+    
     return 0;
 }
 
 void Instancia::exibir(){
-
+    cout << "n agentes: " << numero_agentes << endl;
+    cout << "qtd dias planejamento: " << qtd_dias_planejamento << endl;
+    cout << "qtd clientes: " << quantidade_clientes << endl;
+    cout << "duracao: " << duracao_visita_h << endl;
     cout << "exibindo lista de indices de clientes prioritarios:\n";
+
     for (int i = 0; i < this->clientes_prioritarios.size(); i++) {
         std::cout << clientes_prioritarios[i] << " ";
     }

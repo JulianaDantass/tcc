@@ -17,11 +17,11 @@ int main(int argc, char** argv){
         
         std::string saida = "resultados/solucao_manual_instancia1.csv";
         std::string entrada = "instancias/microareas.csv";
-        Instancia dados;
         
+        Instancia dados;
         std::string filename = string(argv[1]);
         int ler_instancia = dados.ler_instancia(filename);
-        
+        //dados.exibir();
         Resultados resultado(&dados);
         //carrega os dados do csv
         resultado.gerar_solucao_manual(entrada, saida);
