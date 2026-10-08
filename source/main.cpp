@@ -15,7 +15,7 @@ int main(int argc, char** argv){
 
     }else if(argc >= 2){
         
-        std::string saida = "resultados/solucao_manual_instancia1.csv";
+        std::string saida = "resultados/solucao_manual_instancia1.txt";
         std::string entrada = "instancias/microareas.csv";
         
         Instancia dados;

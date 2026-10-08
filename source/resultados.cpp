@@ -4,6 +4,7 @@
 #include <sstream>
 #include <limits>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -25,7 +26,6 @@ void Resultados::printa_microareas() {
    
     for(int i = 0; i < microareas.size(); i++){
         std::cout << "id: " << microareas[i].id << endl;
-        std::cout << "qtd clientes: " << microareas[i].qtd_clientes << endl;
         
         for(int j = 0; j < microareas[i].clientes.size(); j++){
             std::cout << microareas[i].clientes[j] << " ";
@@ -76,15 +76,11 @@ int Resultados::ler_csv(string caminho){
         cont++;
     }
 
-    for(int i=0; i < microareas.size(); i++){
-        microareas[i].qtd_clientes = microareas[i].clientes.size();
-    }
-
     return 0;        
 }
 
 
-int Resultados::salvar_solucao_manual_csv(Solucao &si, std::string nome_saida) {
+int Resultados::salvar_solucao_manual(Solucao &si, std::string nome_saida) {
 
 
     std::ofstream arquivo(nome_saida);
@@ -93,19 +89,15 @@ int Resultados::salvar_solucao_manual_csv(Solucao &si, std::string nome_saida) {
         std::cerr << "Erro: Não foi possível criar o arquivo " << nome_saida << ".\n";
         return false;
     }
-    arquivo << "Solução manual--------------------\n";
-    arquivo << "Foram necessários " << si.get_quantidade_dias() << "dias" << std::endl;
+    arquivo << "Solução manual-----------------------------------------------------\n";
+    arquivo << "Foram necessários " << si.get_quantidade_dias() << "dias ao total. \n";
     arquivo << "O valor do tempo total (em h) foi de " << si.get_fo() << std::endl; 
     
     std::vector<Rotas_diarias>& dias = si.get_dias_planejamento();
     for(int i=0; i < si.get_quantidade_dias(); i++){
-
-        arquivo << "Foram necessários " << si.get_quantidade_dias() << "dias" << std::endl;
-        arquivo << "O valor do tempo total (em h) foi de " << si.get_fo() << std::endl; 
-        
         for(int j = 0; j < dias[i].rotas.size(); j++){
             
-            arquivo << "dia " << j+1 << ":\n";
+            arquivo << "dia " << i+1 << " / agente " << j+1 << ":\n";
             for(int k = 0; k < dias[i].rotas[j].sequencia.size(); k++){
                 arquivo << dias[i].rotas[j].sequencia[k] << ", ";
             }
@@ -118,94 +110,85 @@ int Resultados::salvar_solucao_manual_csv(Solucao &si, std::string nome_saida) {
 }
 
 
-int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_saida){
-
-    ler_csv(nome_entrada);
-    //printa_microareas();
+// Gera uma rota gulosa (Nearest Neighbor) a partir de um ponto de partida
+std::vector<int> Resultados::gerar_ordem_vizinho_mais_proximo(int no_inicial, const std::vector<int>& clientes_microarea) {
     
+
+    std::vector<int> nao_visitados = clientes_microarea;
+    std::vector<int> rota_ordenada;
+    rota_ordenada.reserve(clientes_microarea.size());
+    int no_atual = no_inicial;
+
+    while (!nao_visitados.empty()) {
+        double menor_tempo = std::numeric_limits<double>::max();
+        int melhor_idx = -1;
+
+        for (size_t i = 0; i < nao_visitados.size(); i++) {
+            int candidato = nao_visitados[i];
+            double tempo = dados->matriz_tempo[no_atual][candidato];
+
+            if (tempo < menor_tempo) {
+                menor_tempo = tempo;
+                melhor_idx = static_cast<int>(i);
+            }
+        }
+
+        if (melhor_idx != -1) {
+            int proximo_cliente = nao_visitados[melhor_idx];
+            rota_ordenada.push_back(proximo_cliente);
+            no_atual = proximo_cliente; // O próximo vizinho será calculado a partir do cliente recém-adicionado
+
+            // Remove o cliente já ordenado
+            nao_visitados.erase(nao_visitados.begin() + melhor_idx);
+        }
+    }
+
+    return rota_ordenada;
+}
+
+int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_saida){
+    
+    ler_csv(nome_entrada);
     Solucao si(dados->qtd_dias_planejamento);
     std::vector<Rotas_diarias> dias(dados->qtd_dias_planejamento, Rotas_diarias(dados->numero_agentes));
-    int tam_vetor = (dados->quantidade_clientes+1);
-	std::vector<bool> pacientes_inseridos(tam_vetor, false);
 
-	//adicionando o paciente prioritario que oferece menor distancia ao agente considerando sua rota 
-	int cont_dias=0;
-    int cont_servidos=0;
-    Rotas_diarias* dia = &(dias.at(cont_dias));
-    int it=0;
+    int cont_servidos = 0;
+    for (int i = 0; i < microareas.size(); i++) {
+        
+        std::vector<int> clientes_ordenados = gerar_ordem_vizinho_mais_proximo(deposito, microareas[i].clientes);
+        int dia_atual = 0;
 
-    while(1){
-        bool flag_servidos = 0;
-		bool flag_dia_encerrado = 0;
-        cout << "iteracao " << it << "/ servidos " << cont_servidos << endl;
-        for (int i=0; i < microareas.size(); i++){
-            
-            if(cont_servidos >= dados->quantidade_clientes){
-			    flag_servidos = 1;
-			    break;
-		    }
-			
-		    if(dia->dia_encerrado()){
-			    flag_dia_encerrado = 1;
-			    break;
-		    }
+        for (int id_cliente : clientes_ordenados) {
+            bool cliente_alocado = false;
 
-            if(microareas[i].qtd_clientes <= 0){
-                continue;
-            }
+            while (dia_atual < dados->qtd_dias_planejamento && !cliente_alocado) {
+                
+                Rotas_diarias& dia = dias[dia_atual];
+                int ult_loc = dia.ultimo_no_rota(i);
+                double tempo_viagem = dados->matriz_tempo[ult_loc][id_cliente];
+                double tempo_retorno = dados->matriz_tempo[id_cliente][deposito];
 
-            int ult_loc = dia->ultimo_no_rota(i);
-            double menor_tempo = std::numeric_limits<double>::max();
-            int melhor_id = -1;
+                int status = dia.adicionar_visita(id_cliente, i, tempo_viagem, tempo_retorno);
 
-            for (int j=0; j < microareas[i].clientes.size(); j++){
-                int id_atual = microareas[i].clientes[j];
-
-                if (pacientes_inseridos[id_atual] == false) {
-                    double tempo = dados->matriz_tempo[ult_loc][id_atual];
-
-                    if (tempo < menor_tempo) {
-                        menor_tempo = tempo;
-                        melhor_id = id_atual;
+                if (status == 0) {
+                    cliente_alocado = true;
+                    cont_servidos++;
+                } else {
+                    
+                    bool trocou_turno = dia.troca_turno(i, tempo_retorno);
+                    
+                    if (!trocou_turno || dia.dia_encerrado()) {
+                        si.adiciona_dia(dias[dia_atual]);
+                        dia_atual++;
                     }
                 }
             }
-            cout << "melhor id: " << melhor_id << endl;
-            
-            double dist_volta_posto = dados->matriz_tempo[melhor_id][deposito];
-            int retorno_adicionar = dia->adicionar_visita(melhor_id, i, menor_tempo, dist_volta_posto);
-
-            //se o retorno 1, 2 ou 3 significa que nao deu certo a inserção pq violaria o horario e o agente teve que retornar ao posto
-            if(retorno_adicionar > 0){
-                dia->troca_turno(i, dist_volta_posto);
-                continue;
-            }
-            microareas[i].qtd_clientes -= 1;
-            cont_servidos++;
-			pacientes_inseridos[melhor_id] = true;
         }
-
-        //o dia de todos os agentes encerrou
-		if(flag_dia_encerrado){
-			si.adiciona_dia(dias[cont_dias]);
-			cont_dias++;
-			dia = &(dias.at(cont_dias));
-			
-		}
-		//se todos os clientes prioritarios foram servidos 
-		if(flag_servidos){
-			break;
-		}
-        it++;
     }
-
-
-		//std::cout << "encerrou o o laço---------------" << endl;
-        //si.calcula_fo();
-        //salvar_solucao_manual_csv(si, nome_saida);            //o dia de todos os agentes encerrou    
-
+    si.calcula_fo();
+    salvar_solucao_manual(si, nome_saida);
 }
-		
+
        
 	
     

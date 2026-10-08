@@ -9,7 +9,6 @@
 
 struct Microarea{
     int id;            
-    int qtd_clientes;
     vector<int> clientes;       
     
 };
@@ -29,6 +28,7 @@ class Resultados {
         std::string trim(const std::string& str);
         int ler_csv(string caminho);
         int gerar_solucao_manual(std::string nome_entrada, std::string nome_saida);
-        int salvar_solucao_manual_csv(Solucao &si, std::string nome_saida);
+        int salvar_solucao_manual(Solucao &si, std::string nome_saida);
+        std::vector<int> gerar_ordem_vizinho_mais_proximo(int no_inicial, const std::vector<int>& clientes_microarea);
         void printa_microareas();
 };
