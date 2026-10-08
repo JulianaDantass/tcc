@@ -17,7 +17,8 @@ std::vector<Rotas_diarias>& Solucao::get_dias_planejamento(){
 }
 
 int Solucao::get_quantidade_dias() const{
-    return dias_planejamento.size();
+    
+    return dias_planejamento.size(); 
 }    
 
 double Solucao::get_fo() const{
