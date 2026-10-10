@@ -22,10 +22,11 @@ class Rotas_diarias{
     private: 
         inline static int contador_id = 0;
         //turno[i] informa em qual turno o agente i esteve por ultimo: 1= manha, 2 = tarde, 3 = dia encerrado;
-        std::vector<int> turno;            
+        std::vector<int> turno;
+        double duracao_visita_h;            
 
     public:
-        Rotas_diarias(int i);
+        Rotas_diarias(int i, double d);
 
         //cada vetor representa a rota de um agente. logo, existem N vetores, sendo N a qtd de agentes;    
         std::vector<Rota> rotas;            

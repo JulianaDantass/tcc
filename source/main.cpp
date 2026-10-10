@@ -15,23 +15,21 @@ int main(int argc, char** argv){
 
     }else if(argc >= 2){
         
-        std::string saida = "resultados/solucao_manual_instancia1.txt";
-        std::string entrada = "instancias/microareas.csv";
-        
+        std::string entrada_manual = "instancias/microareas.csv";
+        std::string saida_manual = "resultados/solucao_manual_instancia1.txt";
+        //std::string saida_s_proposta = "resultados/solucao_proposta_instancia1.txt";
+
         Instancia dados;
         std::string filename = string(argv[1]);
         int ler_instancia = dados.ler_instancia(filename);
-        //dados.exibir();
-        Resultados resultado(&dados);
-        //carrega os dados do csv
-        resultado.gerar_solucao_manual(entrada, saida);
+        dados.exibir();
 
-        
+        Resultados resultado(&dados);
+        resultado.gerar_solucao_manual(entrada_manual, saida_manual);
         
         if(ler_instancia != -1){
             //Heuristica heuristica(&dados);
-            //dados.exibir();
-            //heuristica.ILS_RVND();
+            //heuristica.ILS_RVND(saida_s_proposta);
             //heuristica.verifica_fo();
         }
     }

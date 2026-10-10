@@ -17,7 +17,7 @@ class Heuristica{
 		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
 		void perturbacao(Solucao &s);
 		void RVND(Solucao &s);
-		void ILS_RVND();
+		void ILS_RVND(std::string nome_saida);
 		
 		//DEBUG
 		bool validar_rotas(const std::vector<Rotas_diarias>& antigas, const std::vector<Rotas_diarias>& novas, int dia1, int dia2, int idxRota1, int idxRota2);

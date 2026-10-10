@@ -22,6 +22,6 @@ class Solucao{
         std::vector<Rotas_diarias> get_dias_planejamento_estatico();
         double calcula_fo();
         double get_fo() const;
-        void exibe_solucao() const;
+        bool salva_solucao_arquivo(std::string nome, std::vector<int>priori, std::vector<int>n_priori);
 };
 

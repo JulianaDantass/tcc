@@ -77,8 +77,8 @@ int Instancia::ler_instancia (string caminho){
 }
 
 void Instancia::exibir(){
-    cout << "n agentes: " << numero_agentes << endl;
-    cout << "qtd dias planejamento: " << qtd_dias_planejamento << endl;
+    cout << "número de agentes: " << numero_agentes << endl;
+    cout << "qtd total de dias de planejamento: " << qtd_dias_planejamento << endl;
     cout << "qtd clientes: " << quantidade_clientes << endl;
     cout << "duracao: " << duracao_visita_h << endl;
     cout << "exibindo lista de indices de clientes prioritarios:\n";

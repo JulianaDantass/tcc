@@ -4,14 +4,13 @@
 #include <unordered_set>
 
    
-#define MAX_HORAS_AM 3
+#define MAX_HORAS_AM 4
 #define MAX_HORAS_PM 4
-#define DURACAO 0.25
 #define EPSILON  0.0001
 
-Rotas_diarias::Rotas_diarias(int n_agentes){
+Rotas_diarias::Rotas_diarias(int n_agentes, double d){
 
-    
+    duracao_visita_h= d;
     turno.resize(n_agentes); //eu tenho um valor int associado a cada agente   
     
     for(int i = 0; i < n_agentes; i++){
@@ -36,7 +35,7 @@ int Rotas_diarias::adicionar_visita(int &p, int &a, double &d, double &t_volta_p
     }
 
     //ve se é possivel visitar e voltar pro posto
-    double custo_total = d + DURACAO + t_volta_posto;
+    double custo_total = d + duracao_visita_h + t_volta_posto;
     int eh_impossivel = visita_possivel(a, custo_total);
 
     //se não é possivel, tem retorno 1 ou 2

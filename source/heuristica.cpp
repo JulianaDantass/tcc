@@ -42,7 +42,7 @@ Solucao Heuristica::solucao_inicial(){
 	Solucao si(dados->qtd_dias_planejamento);
 
 	// Cria um vetor com N elementos, preenchendo todos eles com uma cópia de Rotas_diarias(dados->numero_agentes)
-	std::vector<Rotas_diarias> dias(dados->qtd_dias_planejamento, Rotas_diarias(dados->numero_agentes));
+	std::vector<Rotas_diarias> dias(dados->qtd_dias_planejamento, Rotas_diarias(dados->numero_agentes, dados->duracao_visita_h));
 	
 	//criando um vetor de booleano pra saber se o paciente já foi inserido
 	int tam_vetor = (dados->quantidade_clientes);
@@ -233,13 +233,14 @@ Solucao Heuristica::solucao_inicial(){
 	return si;
 }
 
-void Heuristica::ILS_RVND(){
+//tem que marcar o tempo de execucao total e o tempo gasto na busca local
+void Heuristica::ILS_RVND(std::string nome_saida){
 	
 	s = solucao_inicial();
 	s_local = s;
 	s_global = s;
 	
-	for (int i = 1; i <= MAX_ITER; i++) {
+	for (int i=1; i<=MAX_ITER; i++) {
 		
 		//cout << "entrou na cons" << endl;
 		s = solucao_inicial();
@@ -270,6 +271,8 @@ void Heuristica::ILS_RVND(){
             s_global = s_local;
         }
 	}
+	cout << "encerrou tudo" << endl;
+	s_global.salva_solucao_arquivo(nome_saida, dados->clientes_prioritarios, dados->clientes_nao_prioritarios);
 }
 
 void Heuristica::busca_intra_rota(Solucao &s, Vizinhancas &mov){
@@ -468,7 +471,7 @@ void Heuristica::perturbacao(Solucao &s){
 			if(rotas[dia2_sorteado].get_tempo_disponivel_pm(rota2_sorteada) < necessario1){    
 				
 				//disponivel na tarde é insuficiente, entao tem que adicionar mais um dia
-				Rotas_diarias r = Rotas_diarias(dados->numero_agentes);
+				Rotas_diarias r = Rotas_diarias(dados->numero_agentes, dados->duracao_visita_h);
 				int primeira_agente = 0;
 				double posto_casa1 = dados->matriz_tempo[0][id_sorteado];
 				double casas1_posto = dados->matriz_tempo[id_sorteado][0];
@@ -503,7 +506,7 @@ void Heuristica::perturbacao(Solucao &s){
 					if(rotas[dia2_sorteado].get_tempo_disponivel_pm(rota2_sorteada) < necessario1){
 						
 						//a tarde não tem tempo suficiente
-						Rotas_diarias r = Rotas_diarias(dados->numero_agentes);
+						Rotas_diarias r = Rotas_diarias(dados->numero_agentes, dados->duracao_visita_h);
 						int primeira_agente = 0;
 						r.adicionar_visita(id_sorteado, primeira_agente, dados->matriz_tempo[0][id_sorteado], dados->matriz_tempo[id_sorteado][0]);
 						r.finaliza_turno(primeira_agente, dados->matriz_tempo[id_sorteado][0]);

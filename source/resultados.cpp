@@ -167,7 +167,7 @@ int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_
     //printa_microareas();
     
     Solucao si(dados->qtd_dias_planejamento);
-    std::vector<Rotas_diarias> dias(dados->qtd_dias_planejamento, Rotas_diarias(dados->numero_agentes));
+    std::vector<Rotas_diarias> dias(dados->qtd_dias_planejamento, Rotas_diarias(dados->numero_agentes, dados->duracao_visita_h));
 
     int cont_servidos = 0;
         // 1. Converte o tamanho para int
@@ -225,7 +225,7 @@ int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_
 
         si.adiciona_dia(dia_atual);
     }
-    cout << "servidos/total: " << cont_servidos << "/ " << dados->matriz_tempo.size() << endl;
+    cout << "servidos/total: " << cont_servidos << "/ " << dados->matriz_tempo.size()-1 << endl;
     si.calcula_fo();
     salvar_solucao_manual(si, nome_saida);
 }
