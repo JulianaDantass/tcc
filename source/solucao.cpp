@@ -56,7 +56,7 @@ std::vector<Rotas_diarias> Solucao::get_dias_planejamento_estatico(){
 bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std::vector<int>n_priori){
 
     std::ofstream arquivo(arq);
-    
+ 
     if (!arquivo.is_open()) {
         std::cerr << "Erro: Não foi possível criar o arquivo " << arq << ".\n";
         return false;

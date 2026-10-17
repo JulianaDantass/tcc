@@ -5,7 +5,6 @@
 #include <string>
 
 #define EPSILON 1e-4 //margem de tolerancia
-#define DURACAO 0.25
 
 
 Vizinhancas::Vizinhancas(const Instancia *d){
@@ -73,7 +72,7 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
                     //para posição da tarde j um paciente i da manhã  
                     if(j > dias[d].rotas[a].qtd_pacientes_am+1 and i <= dias[d].rotas[a].qtd_pacientes_am){
                         
-                        double necessario = DURACAO 
+                        double necessario = dados->duracao_visita_h 
                                             + dados->matriz_tempo[seq[j-1]][seq[i]]
                                             + dados->matriz_tempo[seq[i]][seq[j]]  
                                             - dados->matriz_tempo[seq[j-1]][seq[j]];
@@ -87,7 +86,7 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
                     //para a posicao j da manha um paciente i da tarde 
                     else if (j <= dias[d].rotas[a].qtd_pacientes_am+1 and i > dias[d].rotas[a].qtd_pacientes_am+1){
                        
-                        double necessario = DURACAO
+                        double necessario = dados->duracao_visita_h
                                             + dados->matriz_tempo[seq[i-1]][seq[i+1]]
                                             + dados->matriz_tempo[seq[i]][seq[j]]  
                                             - dados->matriz_tempo[seq[j-1]][seq[j]];
@@ -150,8 +149,8 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am--;
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm++;
-                dias[melhor_d].rotas[melhor_a].tempo_am = dias[melhor_d].rotas[melhor_a].tempo_am - DURACAO + dif_i;
-                dias[melhor_d].rotas[melhor_a].tempo_pm += DURACAO + dif_j; 
+                dias[melhor_d].rotas[melhor_a].tempo_am = dias[melhor_d].rotas[melhor_a].tempo_am - dados->duracao_visita_h + dif_i;
+                dias[melhor_d].rotas[melhor_a].tempo_pm += dados->duracao_visita_h + dif_j; 
             
             //paciente da tarde na tarde
             }else{
@@ -167,8 +166,8 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am++;
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm--;
-                dias[melhor_d].rotas[melhor_a].tempo_am += DURACAO + dif_j; 
-                dias[melhor_d].rotas[melhor_a].tempo_pm = dias[melhor_d].rotas[melhor_a].tempo_pm - DURACAO + dif_i;
+                dias[melhor_d].rotas[melhor_a].tempo_am += dados->duracao_visita_h + dif_j; 
+                dias[melhor_d].rotas[melhor_a].tempo_pm = dias[melhor_d].rotas[melhor_a].tempo_pm - dados->duracao_visita_h + dif_i;
             //paciente da manha para manha
             }else{
                 dias[melhor_d].rotas[melhor_a].tempo_am += melhor_delta;
@@ -233,7 +232,7 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
                     continue;
                 }
 
-                double duracao_i = DURACAO;
+                
                 delta = -dados->matriz_tempo[seq[i-1]][seq[i]] 
                         -dados->matriz_tempo[seq[i+1]][seq[i+2]] 
                         +dados->matriz_tempo[seq[i-1]][seq[i+2]];
@@ -244,7 +243,7 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
                         continue;
                     }
 
-                    double necessario = delta + (2*duracao_i)
+                    double necessario = delta + (2*dados->duracao_visita_h)
                                         -dados->matriz_tempo[seq[j-1]][seq[j]] 
                                         +dados->matriz_tempo[seq[j-1]][seq[i]]
                                         +dados->matriz_tempo[seq[i+1]][seq[j]];
@@ -265,7 +264,7 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
                         }
                     }
                     
-                    delta = necessario - (2*duracao_i); 
+                    delta = necessario - (2*dados->duracao_visita_h); 
                     
                     if (delta < melhor_delta){ 
 
@@ -311,8 +310,8 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am -= 2;
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm += 2;
-                dias[melhor_d].rotas[melhor_a].tempo_am -=  2*DURACAO + dif_i;
-                dias[melhor_d].rotas[melhor_a].tempo_pm +=  2*DURACAO + dif_j; 
+                dias[melhor_d].rotas[melhor_a].tempo_am -=  2*dados->duracao_visita_h + dif_i;
+                dias[melhor_d].rotas[melhor_a].tempo_pm +=  2*dados->duracao_visita_h + dif_j; 
             
             //pacientes da tarde
             }else{
@@ -327,8 +326,8 @@ bool Vizinhancas::intra_oropt2(Solucao &s){
 
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_am += 2;
                 dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm -= 2;
-                dias[melhor_d].rotas[melhor_a].tempo_am += 2*DURACAO + dif_j; 
-                dias[melhor_d].rotas[melhor_a].tempo_pm -= 2*DURACAO + dif_i;
+                dias[melhor_d].rotas[melhor_a].tempo_am += 2*dados->duracao_visita_h + dif_j; 
+                dias[melhor_d].rotas[melhor_a].tempo_pm -= 2*dados->duracao_visita_h + dif_i;
             
             //paciente da manhã    
             }else{
@@ -514,7 +513,7 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                     continue;
                 }
 
-                double necessario1 = -DURACAO   
+                double necessario1 = -dados->duracao_visita_h   
                         +dados->matriz_tempo[rota1[i-1]][rota1[i+1]] 
                         -dados->matriz_tempo[rota1[i-1]][rota1[i]] 
                         -dados->matriz_tempo[rota1[i]][rota1[i+1]];
@@ -547,7 +546,7 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                         //j representa um espaco da seq2 do agente b do dia e
                         for(int j = 1; j < rota2.size(); j++){
 
-                            double necessario2 = DURACAO  
+                            double necessario2 = dados->duracao_visita_h  
                                                     -dados->matriz_tempo[rota2[j-1]][rota2[j]] 
                                                     +dados->matriz_tempo[rota2[j-1]][rota1[i]]
                                                     +dados->matriz_tempo[rota1[i]][rota2[j]];
@@ -652,130 +651,6 @@ bool Vizinhancas::inter_shift10(Solucao &s){
         printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
         getchar();
         */
-    }
-
-    return houve_melhoria_rotas;
-}
-
-bool Vizinhancas::inter_swap11(Solucao &s){
-
-    std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
-    bool houve_melhoria_rotas = 0;
-    double delta, 
-    melhor_delta = 0, melhor_delta1, melhor_delta2;                 
-
-    //vao guardar os indices de melhor troca
-    int melhor_i, melhor_j;       
-    int melhor_a, melhor_b, melhor_d, melhor_e;
-
-	for(int d = 0; d < dias.size(); d++){   
-        for(int a = 0; a < dias[d].rotas.size(); a++){
-            const auto& rota1 = dias[d].rotas[a].sequencia;
-            
-            //i representa um paciente da seq1 do agente a do dia d
-            for(int i = 1; i < rota1.size(); i++){
-
-                if(rota1[i] == 0){
-                    continue;
-                }
-
-                delta = -dados->matriz_tempo[rota1[i-1]][rota1[i]] 
-                        -dados->matriz_tempo[rota1[i]][rota1[i+1]];
-
-                for(int e = 0; e < dias.size(); e++){
-                    for(int b = 0; b < dias[e].rotas.size(); b++){
-                        const auto& rota2 = dias[e].rotas[b].sequencia;
-
-                        //se for a mesma rota, n vamos fzr nd 
-                        if(dias[d].rotas[a].id_rota == dias[e].rotas[b].id_rota){ 
-                            continue;
-                        }
-
-                        //j representa um paciente da seq2 do agente b do dia e
-                        for(int j = 1; j < rota2.size()-1; j++){
-
-                            if(rota2[j] == 0){
-                                continue;
-                            }
-                            double necessario_r2 =  -dados->matriz_tempo[rota2[j]][rota2[j+1]] 
-                                                    -dados->matriz_tempo[rota2[j-1]][rota2[j]]   
-                                                    +dados->matriz_tempo[rota2[j-1]][rota1[i]]
-                                                    +dados->matriz_tempo[rota1[i]][rota2[j+1]];
-                                
-                            
-                            if(j > dias[e].rotas[b].qtd_pacientes_am){
-
-                                //mov invalido
-                                if(dias[e].get_tempo_disponivel_pm(b) < necessario_r2){    
-                                    continue;
-                                }
-                            }else{ 
-                                //mov invalido
-                                if(dias[e].get_tempo_disponivel_am(b) < necessario_r2){
-                                    continue;
-                                }
-                            }
-
-
-                            double necessario_r1 = delta + dados->matriz_tempo[rota1[i-1]][rota2[j]]
-                                                        + dados->matriz_tempo[rota2[j]][rota1[i+1]];
-
-                            if(i > dias[d].rotas[a].qtd_pacientes_am){
-                                //mov invalido
-                                if(dias[d].get_tempo_disponivel_pm(a) < necessario_r1){    
-                                    continue;
-                                }
-                            }else{ 
-                                //mov invalido
-                                if(dias[d].get_tempo_disponivel_am(a) < necessario_r1){
-                                    continue;
-                                }
-                            }
-                        
-                            delta = necessario_r1 + necessario_r2;
-                            // se delta for menor que o melhor delta atual significa que melhorou a solucao
-                            if (delta < melhor_delta){ 
-
-                                melhor_delta = delta;
-                                melhor_delta1 = necessario_r1;
-                                melhor_delta2 = necessario_r2;  
-                                melhor_i = i;          
-                                melhor_j = j;          
-                                melhor_a = a;
-                                melhor_b = b;
-                                melhor_d = d;
-                                melhor_e = e;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (melhor_delta < -double(EPSILON)){
-
-        if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
-            dias[melhor_e].rotas[melhor_b].tempo_pm += melhor_delta2;
-            
-        }else{ 
-            dias[melhor_e].rotas[melhor_b].tempo_am += melhor_delta2;
-        }
-        dias[melhor_e].rotas[melhor_b].tempo_total += melhor_delta2;
-
-
-        if(melhor_i > dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
-            dias[melhor_d].rotas[melhor_a].tempo_pm += melhor_delta1;
-            
-        }else{
-
-            dias[melhor_d].rotas[melhor_a].tempo_am += melhor_delta1;
-        }
-        dias[melhor_d].rotas[melhor_a].tempo_total += melhor_delta1;
-        
-        s.set_fo(s.get_fo() + melhor_delta);
-        std::swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i], dias[melhor_e].rotas[melhor_b].sequencia[melhor_j]);
-        houve_melhoria_rotas = 1;
     }
 
     return houve_melhoria_rotas;
@@ -902,9 +777,9 @@ bool Vizinhancas::inter_swap22(Solucao &s){
 
         //debug
         
-        cout << "inter swap22" << endl;
-        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
-        cout << "rotas antes: " << endl;
+        //cout << "inter swap22" << endl;
+        //cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
+        //cout << "rotas antes: " << endl;
         //printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
         //printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
         

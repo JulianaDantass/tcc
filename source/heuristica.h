@@ -13,6 +13,7 @@ class Heuristica{
 		Heuristica(Instancia* d);
 		~Heuristica();
 		
+		void printa(Rota& r);
 		Solucao solucao_inicial();
 		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
 		void perturbacao(Solucao &s);
