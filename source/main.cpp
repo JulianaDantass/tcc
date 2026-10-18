@@ -22,7 +22,7 @@ int main(int argc, char** argv){
         Instancia dados;
         std::string filename = string(argv[1]);
         int ler_instancia = dados.ler_instancia(filename);
-        //dados.exibir();
+        dados.exibir();
 
         //Resultados resultado(&dados);
         //resultado.gerar_solucao_manual(entrada_manual, saida_manual);

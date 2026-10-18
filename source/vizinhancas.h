@@ -37,5 +37,6 @@ class Vizinhancas{
         
         //debug
         void printa(Rota &r, int mi, int mj);
+        void confere(Rota& r);
 };
 

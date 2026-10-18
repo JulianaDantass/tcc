@@ -30,7 +30,7 @@ class Rotas_diarias{
 
         //cada vetor representa a rota de um agente. logo, existem N vetores, sendo N a qtd de agentes;    
         std::vector<Rota> rotas;            
-        int adicionar_visita(int &paci, int &agente, double &distancia, double &volta_posto);  
+        int adicionar_visita(int paci, int agente, double distancia, double volta_posto);  
         int visita_possivel(int agente, double custo_total);
         int ultimo_no_rota(int ag);
         int dia_encerrado();

@@ -43,6 +43,7 @@ double Solucao::calcula_fo(){
 
     for(int i = 0; i < dias_planejamento.size(); i++){
         t_total_mes += dias_planejamento[i].get_tempo_total_dia();
+        std::cout << "i" << t_total_mes << std::endl;
     }
 
     this->funcao_objetivo = t_total_mes;

@@ -73,10 +73,11 @@ def calcular_matriz_dijkstra():
         print("Tentando carregar coordenadas... ---")
         nos = []
         with open(NOS, "r", encoding="utf-8") as f:
+            i = 0 
             for linha in f:
                 no = int(linha.strip())
                 nos.append(no)
-    
+                
     n = len(nos)
     matriz_distancias = []
     
@@ -91,13 +92,13 @@ def calcular_matriz_dijkstra():
             else:
                 distancia = nx.shortest_path_length(G, source=i, target=j, weight="length")
             tempo = distancia/3000.0;  
-            linha.append(round(tempo, 3)) 
+            linha.append(round(tempo, 3))
                
-             
         matriz_distancias.append(linha)
         print(cont)
         cont+=1
-                
+    
+    salvar_matriz(matriz_distancias)
     return matriz_distancias
 
 def salvar_matriz(matriz):

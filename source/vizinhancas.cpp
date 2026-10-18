@@ -11,6 +11,40 @@ Vizinhancas::Vizinhancas(const Instancia *d){
     this->dados = d;
 }
 
+void Vizinhancas::confere(Rota& r){
+
+    int qtd_zeros = 0;
+    double t_pm, t_am, t_total = 0;
+    for (int k = 0; k < r.sequencia.size()-1; k++) {
+
+        if(r.sequencia[k] == 0 or r.sequencia[k+1] == 0){
+            qtd_zeros++;
+        }
+        double t = dados->matriz_tempo[r.sequencia[k]][r.sequencia[k+1]];
+        t_total += t;
+        if(qtd_zeros > 2){
+            t_pm += t;
+        }else{
+            cout << "dist: " << r.sequencia[k] << " e " << r.sequencia[k+1] << endl;
+            t_am += t;
+        }
+    }
+
+    t_am += 0.25* r.qtd_pacientes_am; 
+    t_pm += 0.25* r.qtd_pacientes_pm;
+    
+    if(t_am - r.tempo_am > double(EPSILON)){
+        cout << "Tempos am não batem: ";
+        cout << "calculado: " << t_am << " real: " << r.tempo_am << endl;
+        cout << "qtd_paci_am: " << r.qtd_pacientes_am << endl;
+    }
+
+    if(t_pm - r.tempo_pm > double(EPSILON)){
+        cout << "Tempos pm não batem ";
+        cout << "calculado: " << t_pm << " real: " << r.tempo_pm << endl;
+    }
+}
+
 void Vizinhancas::printa(Rota& r, int melhor_paciente, int melhor_posicao){
 
     const std::string VERMELHO = "\033[31m";
@@ -593,64 +627,75 @@ bool Vizinhancas::inter_shift10(Solucao &s){
 
     if (melhor_delta < -double(EPSILON)){
 
-        //debug
-        /*
-        cout << "inter shift10" << endl;
-        cout << "melhor i: " << melhor_i << " melhor j: " << melhor_j << endl;
-        cout << "rotas antes: " << endl;
-        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
-        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
-        getchar();
-        */
-        
         auto rota1 = dias[melhor_d].rotas[melhor_a].sequencia;
         auto rota2 = dias[melhor_e].rotas[melhor_b].sequencia;
+        cout << rota1[melhor_i-1] <<  " e " <<  rota1[melhor_i+1] << "; -" << rota1[melhor_i-1] << " e " << rota1[melhor_i] << "; -" << rota1[melhor_i] << " e " << rota1[melhor_i+1] << endl;
+        cout << rota2[melhor_j-1] <<  " e " <<  rota1[melhor_i] << "; +" << rota1[melhor_i] << " e " << rota2[melhor_j] << "; -" << rota2[melhor_j-1] << " e " << rota2[melhor_j] << endl;
+        cout << "quantidade de pacientes am na rota1: " << dias[melhor_d].rotas[melhor_a].qtd_pacientes_am << endl;
+        cout << "quantidade de pacientes am na rota2: " << dias[melhor_e].rotas[melhor_b].qtd_pacientes_am << endl;
+        /*
+        printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
+        printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        */
         
+        
+        // 3. Atualiza contadores, tempos e custos do destino [e][b]
+        // 1. Armazena o paciente a ser movido
+        int paciente_movido = dias[melhor_d].rotas[melhor_a].sequencia[melhor_i];
 
+        // 2. Trata alteração estrutural na origem (se houver remoção de turno/zero extra)
         if(dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm == 1){
             dias[melhor_d].retroceder_turno(melhor_a);
-            //retirando o 0 que fica a mais na solução já q o unico paciente do turno foi retirado
-            dias[melhor_d].rotas[melhor_a].sequencia.erase(dias[melhor_d].rotas[melhor_a].sequencia.begin() + melhor_i+1);
         }
 
+        // 3. Atualiza contadores e tempos na ROTA DE DESTINO
         if(melhor_j > dias[melhor_e].rotas[melhor_b].qtd_pacientes_am){
-
+            cout <<"j no tempo pm\n";
             dias[melhor_e].rotas[melhor_b].tempo_pm += melhor_delta2;
             dias[melhor_e].rotas[melhor_b].qtd_pacientes_pm++;
-        
-        }else{ 
+        } else { 
+            cout <<"j no tempo am\n";
             dias[melhor_e].rotas[melhor_b].tempo_am += melhor_delta2;
             dias[melhor_e].rotas[melhor_b].qtd_pacientes_am++;
         }
         dias[melhor_e].rotas[melhor_b].tempo_total += melhor_delta2;
 
-        //retirando o custo do paciente da posi i
+        // 4. Atualiza contadores e tempos na ROTA DE ORIGEM
         if(melhor_i > dias[melhor_d].rotas[melhor_a].qtd_pacientes_am){
+            cout <<"i no tempo pm\n";
             dias[melhor_d].rotas[melhor_a].qtd_pacientes_pm--;
-            dias[melhor_d].rotas[melhor_a].tempo_pm +=  melhor_delta1;
-        }else{
-
-            dias[melhor_d].rotas[melhor_a].tempo_am +=  melhor_delta1;
+            dias[melhor_d].rotas[melhor_a].tempo_pm += melhor_delta1;
+        } else {
+            //cout <<"i no tempo am\n";
+            dias[melhor_d].rotas[melhor_a].tempo_am += melhor_delta1;
             dias[melhor_d].rotas[melhor_a].qtd_pacientes_am--;
         }
         dias[melhor_d].rotas[melhor_a].tempo_total += melhor_delta1;
 
-        //funcao objetivo
-        s.set_fo(s.get_fo() + melhor_delta);
+        // 5. Atualiza o custo da solução global
+        s.set_fo(s.get_fo() + melhor_delta); // melhor_delta == melhor_delta1 + melhor_delta2
 
-        //efetivar troca
-        dias[melhor_e].rotas[melhor_b].sequencia.insert(dias[melhor_e].rotas[melhor_b].sequencia.begin() + melhor_j, dias[melhor_d].rotas[melhor_a].sequencia[melhor_i]);
-        dias[melhor_d].rotas[melhor_a].sequencia.erase(dias[melhor_d].rotas[melhor_a].sequencia.begin() + melhor_i);
+        // 6. Efetiva as alterações nos vetores (Inter-rotas)
+        // Remove da origem
+        dias[melhor_d].rotas[melhor_a].sequencia.erase(
+            dias[melhor_d].rotas[melhor_a].sequencia.begin() + melhor_i
+        );
 
-
+        // Insere no destino na posição j (entre j-1 e j original)
+        dias[melhor_e].rotas[melhor_b].sequencia.insert(
+            dias[melhor_e].rotas[melhor_b].sequencia.begin() + melhor_j, 
+            paciente_movido
+        );
         houve_melhoria_rotas = 1;
 
-        /*
+        
         cout << "rotas dps: ";
         printa(dias[melhor_d].rotas[melhor_a], melhor_i, -1);
         printa(dias[melhor_e].rotas[melhor_b], melhor_j, -1);
+        confere(dias[melhor_d].rotas[melhor_a]);
+        confere(dias[melhor_e].rotas[melhor_b]);
         getchar();
-        */
+        
     }
 
     return houve_melhoria_rotas;
@@ -812,6 +857,7 @@ bool Vizinhancas::inter_swap22(Solucao &s){
         std::swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i], dias[melhor_e].rotas[melhor_b].sequencia[melhor_j]);
         std::swap(dias[melhor_d].rotas[melhor_a].sequencia[melhor_i+1], dias[melhor_e].rotas[melhor_b].sequencia[melhor_j+1]);
 
+        
         houve_melhoria_rotas = 1;
 
         //debug

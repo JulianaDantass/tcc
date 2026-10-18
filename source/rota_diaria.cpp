@@ -9,8 +9,9 @@
 #define EPSILON  0.0001
 
 Rotas_diarias::Rotas_diarias(int n_agentes, double d){
-
+    
     duracao_visita_h= d;
+    std::cout << "d:" << duracao_visita_h;
     turno.resize(n_agentes); //eu tenho um valor int associado a cada agente   
     
     for(int i = 0; i < n_agentes; i++){
@@ -25,7 +26,8 @@ adiciona um paciente (inteiro p) à rota do agente a
 d é a distancia entre o ultimo paciente da rota e o paciente p
 t_volta_posto é a distancia de p ao posto
 */
-int Rotas_diarias::adicionar_visita(int &p, int &a, double &d, double &t_volta_posto) {
+int Rotas_diarias::adicionar_visita(int p, int a, double d, double t_volta_posto) {
+    
     
     double t_chegada;
  
@@ -44,19 +46,21 @@ int Rotas_diarias::adicionar_visita(int &p, int &a, double &d, double &t_volta_p
     }else{
 
         //somando o tempo gasto
-        rotas[a].tempo_total += custo_total - t_volta_posto; 
+        rotas[a].tempo_total += d + duracao_visita_h; 
 
         //colocando o paciente na rota
         rotas[a].sequencia.push_back(p);
 
         if(turno[a] == 1){
+            //std::cout << "adicionou" << std::endl;
             rotas[a].qtd_pacientes_am += 1;
-            rotas[a].tempo_am += custo_total - t_volta_posto;
+            rotas[a].tempo_am +=  d + duracao_visita_h;
             
 
         }else if(turno[a] == 2){
+            //std::cout << "adicionou" << std::endl;
             rotas[a].qtd_pacientes_pm += 1;
-            rotas[a].tempo_pm += custo_total - t_volta_posto;
+            rotas[a].tempo_pm +=  d + duracao_visita_h;
         } 
 
         return 0;
@@ -108,7 +112,6 @@ int Rotas_diarias::troca_turno(int ag, double dist_volta_posto){
 
         if(turno[ag] == 1){
             rotas[ag].tempo_am += dist_volta_posto;
-
         }else if(turno[ag] == 2){
             rotas[ag].tempo_pm += dist_volta_posto;
         } 
@@ -140,6 +143,7 @@ double Rotas_diarias::get_tempo_total_dia(){
     double t_total_dia = 0;
 
     for(int i = 0; i < rotas.size(); i++){
+        std::cout << i << "tt:" << rotas[i].tempo_total << std::endl;
         t_total_dia += rotas[i].tempo_total;
     }
 
@@ -160,13 +164,15 @@ void Rotas_diarias::finaliza_turno(int ag, double c_volta_posto){
     
     rotas[ag].tempo_total += c_volta_posto; 
     rotas[ag].sequencia.push_back(0);
-
+    //std::cout << "finalizou";
+    
      if(turno[ag] == 1){
         rotas[ag].tempo_am += c_volta_posto;
 
     }else if(turno[ag] == 2){
         rotas[ag].tempo_pm += c_volta_posto;
     } 
+    
 }
 
 int Rotas_diarias::get_turno(int ag){
