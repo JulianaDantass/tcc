@@ -11,11 +11,10 @@
 Rotas_diarias::Rotas_diarias(int n_agentes, double d){
     
     duracao_visita_h= d;
-    std::cout << "d:" << duracao_visita_h;
     turno.resize(n_agentes); //eu tenho um valor int associado a cada agente   
     
     for(int i = 0; i < n_agentes; i++){
-        rotas.push_back({contador_id, 0, 0, 0.0, 0.0, 0.0, std::vector<int>{0}});
+        rotas.push_back({contador_id, std::vector<int>{0}, std::vector<int>{}});
         contador_id++;     
         turno[i] = 1;
     }
@@ -43,23 +42,17 @@ int Rotas_diarias::adicionar_visita(int p, int a, double d, double t_volta_posto
     //se não é possivel, tem retorno 1 ou 2
     if(eh_impossivel > 0){
         return 2;
-    }else{
-
-        //somando o tempo gasto
-        rotas[a].tempo_total += d + duracao_visita_h; 
-
-        //colocando o paciente na rota
-        rotas[a].sequencia.push_back(p);
+    }else{        
 
         if(turno[a] == 1){
             //std::cout << "adicionou" << std::endl;
-            rotas[a].qtd_pacientes_am += 1;
+            rotas[a].sequencia_am.push_back(p);
             rotas[a].tempo_am +=  d + duracao_visita_h;
             
 
         }else if(turno[a] == 2){
             //std::cout << "adicionou" << std::endl;
-            rotas[a].qtd_pacientes_pm += 1;
+            rotas[a].sequencia_pm.push_back(p);
             rotas[a].tempo_pm +=  d + duracao_visita_h;
         } 
 
@@ -91,8 +84,12 @@ int Rotas_diarias::visita_possivel(int agente, double custo_total){
 
 //retorna o ultimo paciente visitado pelo agente
 int Rotas_diarias::ultimo_no_rota(int ag){ 
-    
-    return rotas[ag].sequencia.back();  
+    if(turno[ag] == 1){
+        return rotas[ag].sequencia_am.back();
+    }else{
+        return rotas[ag].sequencia_pm.back();
+    }
+      
 }
 
 int Rotas_diarias::troca_turno(int ag, double dist_volta_posto){
@@ -104,23 +101,24 @@ int Rotas_diarias::troca_turno(int ag, double dist_volta_posto){
     }else if(turno[ag] == 3){
         return 2;
 
-    }else{
+    }else if(turno[ag] == 1){
+            
+        //fechando a sequencia am
+        rotas[ag].sequencia_am.push_back(0);
+        rotas[ag].tempo_am += dist_volta_posto;
+        //abrindo a sequencia pm
+        rotas[ag].sequencia_pm.push_back(0);
+    }else if(turno[ag] == 2){
 
-        //adicionando o tempo de volta ao posto
-        rotas[ag].sequencia.push_back(0);
-        rotas[ag].tempo_total += dist_volta_posto;
+        //fechando a sequencia pm
+        rotas[ag].sequencia_pm.push_back(0);
+        rotas[ag].tempo_pm += dist_volta_posto;
+    } 
 
-        if(turno[ag] == 1){
-            rotas[ag].tempo_am += dist_volta_posto;
-        }else if(turno[ag] == 2){
-            rotas[ag].tempo_pm += dist_volta_posto;
-        } 
+    //trocando o turno 
+    this->turno[ag] += 1;
 
-        //trocando o turno 
-        this->turno[ag] += 1;
-
-        return 0;
-    }
+    return 0;
 }
 
 int Rotas_diarias::dia_encerrado(){
@@ -143,8 +141,8 @@ double Rotas_diarias::get_tempo_total_dia(){
     double t_total_dia = 0;
 
     for(int i = 0; i < rotas.size(); i++){
-        std::cout << i << "tt:" << rotas[i].tempo_total << std::endl;
-        t_total_dia += rotas[i].tempo_total;
+        //std::cout << i << "tt:" << rotas[i].tempo_total << std::endl;
+        t_total_dia += rotas[i].tempo_am + rotas[i].tempo_pm;
     }
 
     return t_total_dia;
@@ -162,14 +160,14 @@ double Rotas_diarias::get_tempo_disponivel_pm(int ag){
 
 void Rotas_diarias::finaliza_turno(int ag, double c_volta_posto){
     
-    rotas[ag].tempo_total += c_volta_posto; 
-    rotas[ag].sequencia.push_back(0);
     //std::cout << "finalizou";
     
      if(turno[ag] == 1){
+        rotas[ag].sequencia_am.push_back(0);
         rotas[ag].tempo_am += c_volta_posto;
 
     }else if(turno[ag] == 2){
+        rotas[ag].sequencia_pm.push_back(0);
         rotas[ag].tempo_pm += c_volta_posto;
     } 
     
@@ -191,40 +189,28 @@ void Rotas_diarias::avancar_turno(int ag){
 }
 
 
-void Rotas_diarias::printa_rota(int ag, int a, int b){
+void Rotas_diarias::printa_rota(int ag){
 
     const std::string VERMELHO = "\033[31m";
     const std::string AZUL = "\033[34m";
     const std::string RESET = "\033[0m";
+    std::cout << "agente " << ag << std::endl;
 
-    for(int i = 0; i < rotas[ag].sequencia.size(); i++){
+    if(rotas[ag].sequencia_am.size() == 0){
+        std::cout << "vazio";
+    }else{
+        for(auto i : rotas[ag].sequencia_am){
+            std::cout <<  i << " ";
+        }
+    }
+    std::cout << " / ";
 
-        if(i == a and i != -1){  
-            std::cout << VERMELHO <<  "(" << i << ")" << rotas[ag].sequencia[i] << " ";
-            std::cout << RESET;    
-
-        }else if(i == b and b != -1){
-            std::cout << VERMELHO <<  "(" << i << ")" << rotas[ag].sequencia[i] << " ";
-            std::cout << RESET;    
-            
-        }else{
-            std::cout << "(" << i << ")" << rotas[ag].sequencia[i] << " ";
+    if(rotas[ag].sequencia_pm.size() == 0){
+        std::cout << "vazio";
+    }else{
+        for(auto i : rotas[ag].sequencia_pm){
+            std::cout <<  i << " ";
         }
     }
     std::cout << std::endl;
-}
-
-
-void Rotas_diarias::exibir_dia() const{
-    
-    for(int i = 0; i < rotas.size(); i++){
-        std::cout << "id rota: " << rotas[i].id_rota << std::endl;
-        std::cout << "qtd de nós na rota: " << rotas[i].sequencia.size() << std::endl;
-    
-        for(int j = 0; j < rotas[i].sequencia.size(); j++){
-            std::cout << rotas[i].sequencia[j] << ", ";
-            
-        }
-        std::cout << std::endl;
-    }
 }

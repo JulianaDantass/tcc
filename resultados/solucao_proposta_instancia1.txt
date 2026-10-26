@@ -1,0 +1,14 @@
+Pacientes prioritários: 
+Pacientes não prioritários: DIA 1:
+agente 1 - manhã: 0, 10, 9, 4, 15, 0, 
+           tarde: 
+agente 2 - manhã: 0, 17, 1, 16, 2, 13, 12, 14, 18, 0, 
+           tarde: 
+agente 3 - manhã: 0, 3, 7, 6, 19, 0, 
+           tarde: 
+agente 4 - manhã: 0, 0, 
+           tarde: 
+agente 5 - manhã: 0, 11, 8, 5, 0, 
+           tarde: 
+FORAM NECESSARIOS EM DIAS: 1
+TEMPO TOTAL GASTO EM HORAS: 5.463

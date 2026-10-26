@@ -6,14 +6,12 @@
 
 struct Rota {
     int id_rota;
-    int qtd_pacientes_am;
-    int qtd_pacientes_pm;
-    double tempo_total;
-    double tempo_am;
-    double tempo_pm;
-    std::vector<int> sequencia;
+    double tempo_am=0;
+    double tempo_pm=0;
+    std::vector<int> sequencia_am;
+    std::vector<int> sequencia_pm;
 
-    Rota(int id, int am, int pm, double t_t, double t_am, double t_pm, std::vector<int> s): id_rota(id), qtd_pacientes_am(am), qtd_pacientes_pm(pm), tempo_total(t_t), tempo_am(t_am), tempo_pm(t_pm), sequencia(s) {}
+    Rota(int id, std::vector<int> s, std::vector<int> sp) : id_rota(id), sequencia_am(s), sequencia_pm(sp) {}
 };
 
 //representa 1 dia de trabalho de TODOS agentes
@@ -44,7 +42,7 @@ class Rotas_diarias{
         void retroceder_turno(int ag);
         void avancar_turno(int ag);
         
-        void printa_rota(int ag, int a, int b);
+        void printa_rota(int ag);
         void exibir_dia() const;
 };
 

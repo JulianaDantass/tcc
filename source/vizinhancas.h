@@ -29,14 +29,9 @@ class Vizinhancas{
         Vizinhancas(const Instancia *d);
         void set_dados(Instancia *d);
         bool intra_reinsertion(Solucao &s); 
-        bool intra_oropt2(Solucao &s);      
-        bool intra_exchange(Solucao &s);    
+        bool intra_swap22(Solucao &s);        
         bool inter_shift10(Solucao &s);     
-        bool inter_swap11(Solucao &s);      
         bool inter_swap22(Solucao &s);      
         
-        //debug
-        void printa(Rota &r, int mi, int mj);
-        void confere(Rota& r);
 };
 

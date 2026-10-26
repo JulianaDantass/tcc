@@ -87,25 +87,24 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
         int cont_rotas_vazias = 0;
         for(int j = 0; j < dias_planejamento[i].rotas.size(); j++){            
 
-            arquivo << "agente " << j+1 << ": ";
-            for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia.size(); k++){
+            arquivo << "agente " << j+1 << " - ";
+            arquivo << "manhã: ";
+            for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia_am.size(); k++){
                 
-                if(dias_planejamento[i].rotas[j].sequencia.size() == 1){
-                    cont_rotas_vazias++;
-                }else{
-                    arquivo << dias_planejamento[i].rotas[j].sequencia[k] << ", ";
-                }
+                arquivo << dias_planejamento[i].rotas[j].sequencia_am[k] << ", ";
+               
+            }
+            arquivo << "\n           tarde: ";
+            for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia_pm.size(); k++){
+                
+                arquivo << dias_planejamento[i].rotas[j].sequencia_pm[k] << ", ";
                
             }
             arquivo << std::endl;
         }
-
-        if(cont_rotas_vazias == 5){
-            cont_dias_vazios++;
-        }
     }
 
-    arquivo << "FORAM NECESSARIOS EM DIAS: " << (dias_planejamento.size() - cont_dias_vazios) << "\n";
+    arquivo << "FORAM NECESSARIOS EM DIAS: " << (dias_planejamento.size()) << "\n";
     arquivo << "TEMPO TOTAL GASTO EM HORAS: " << funcao_objetivo << std::endl; 
     
     arquivo.close();
