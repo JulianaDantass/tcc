@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <random>
 #include "instancia.h"
 #include "solucao.h"
 #include "vizinhancas.h"
@@ -26,12 +27,10 @@ class Heuristica{
 		void printa_solucao(Rota& r, int melhor_paciente, int melhor_posicao);
 
 	private:
-		int qtd_vizinhancas_inter;
-		int qtd_vizinhancas_intra;
+
+		std::random_device rd;
+   	 	std::mt19937 gen{rd()};
 		Instancia *dados;
-		Solucao s{QTD_DIAS_PLANEJAMENTO};
-		Solucao s_local{QTD_DIAS_PLANEJAMENTO};
-		Solucao s_global{QTD_DIAS_PLANEJAMENTO};
 		
 		
 };

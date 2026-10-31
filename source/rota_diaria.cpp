@@ -41,17 +41,17 @@ int Rotas_diarias::adicionar_visita(int p, int a, double d, double t_volta_posto
 
     //se não é possivel, tem retorno 1 ou 2
     if(eh_impossivel > 0){
-        return 2;
+        return 1;
     }else{        
 
         if(turno[a] == 1){
-            //std::cout << "adicionou" << std::endl;
+            //std::cout << "rota: " << a << " / adicionado em am: " << p << " com valor " << d << std::endl;
             rotas[a].sequencia_am.push_back(p);
             rotas[a].tempo_am +=  d + duracao_visita_h;
             
 
         }else if(turno[a] == 2){
-            //std::cout << "adicionou" << std::endl;
+            //std::cout << "rota: " << a << " / adicionado em pm: " << p << " com valor " << d << std::endl;
             rotas[a].sequencia_pm.push_back(p);
             rotas[a].tempo_pm +=  d + duracao_visita_h;
         } 
@@ -95,24 +95,23 @@ int Rotas_diarias::ultimo_no_rota(int ag){
 int Rotas_diarias::troca_turno(int ag, double dist_volta_posto){
 
     //adicionando a volta ao posto
-    if(ultimo_no_rota(ag) == 0 ){
-        return 1;
-        
-    }else if(turno[ag] == 3){
+    if(turno[ag] == 3){
+        //std::cout << "entrou no turno 3" << std::endl;
         return 2;
 
     }else if(turno[ag] == 1){
             
-        //fechando a sequencia am
+        //std::cout << "entrou no turno 1" << std::endl;
         rotas[ag].sequencia_am.push_back(0);
         rotas[ag].tempo_am += dist_volta_posto;
-        //abrindo a sequencia pm
         rotas[ag].sequencia_pm.push_back(0);
+    
     }else if(turno[ag] == 2){
 
-        //fechando a sequencia pm
+        //std::cout << "agente " << ag << " entrou no turno 2" << " / ";
         rotas[ag].sequencia_pm.push_back(0);
         rotas[ag].tempo_pm += dist_volta_posto;
+        //std::cout << " acrecentando 0: " << dist_volta_posto; 
     } 
 
     //trocando o turno 
@@ -194,11 +193,11 @@ void Rotas_diarias::printa_rota(int ag){
     const std::string VERMELHO = "\033[31m";
     const std::string AZUL = "\033[34m";
     const std::string RESET = "\033[0m";
-    std::cout << "agente " << ag << std::endl;
 
     if(rotas[ag].sequencia_am.size() == 0){
         std::cout << "vazio";
     }else{
+        std::cout << "sequencia am: ";
         for(auto i : rotas[ag].sequencia_am){
             std::cout <<  i << " ";
         }
@@ -208,6 +207,7 @@ void Rotas_diarias::printa_rota(int ag){
     if(rotas[ag].sequencia_pm.size() == 0){
         std::cout << "vazio";
     }else{
+        std::cout << "sequencia pm: ";
         for(auto i : rotas[ag].sequencia_pm){
             std::cout <<  i << " ";
         }

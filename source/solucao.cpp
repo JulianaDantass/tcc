@@ -43,7 +43,7 @@ double Solucao::calcula_fo(){
 
     for(int i = 0; i < dias_planejamento.size(); i++){
         t_total_mes += dias_planejamento[i].get_tempo_total_dia();
-        std::cout << "i" << t_total_mes << std::endl;
+        //std::cout << "i" << t_total_mes << std::endl;
     }
 
     this->funcao_objetivo = t_total_mes;
@@ -66,20 +66,11 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
     arquivo << "Pacientes prioritários: ";
     for(int i=0; i<priori.size(); i++){
         
-        if(i == priori.size()/2){
-            std::cout << std::endl;
-        }
-        std::cout << priori[i] << " "; 
+        arquivo << priori[i] << " "; 
     }
-    arquivo << "\nPacientes não prioritários: ";
-    for(int i=0; i<n_priori.size(); i++){
-        
-        if(i == n_priori.size()/2){
-            std::cout << std::endl;
-        }
-        std::cout << n_priori[i] << " "; 
-    }
-
+    arquivo << "\nTotal de prioritários: " << priori.size() << std::endl;
+    arquivo << "\nTotal de não prioritários: " << n_priori.size() << std::endl;
+    
     int cont_dias_vazios = 0;
     for(int i=0; i < dias_planejamento.size(); i++){
         arquivo << "DIA " << i+1 << ":\n";

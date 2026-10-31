@@ -207,6 +207,7 @@ bool Vizinhancas::intra_swap22(Solucao &s){
 //Shift(1,0)– A customer k is transferred from a route r1 to a route r2.
 bool Vizinhancas::inter_shift10(Solucao &s){  
 
+    //cout << "entrou inter shift 10" << endl; 
     bool houve_melhoria_rotas = 0;
     std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     //vai guardar a diferenca de valor em relacao a solucao de um dos dias
@@ -467,8 +468,8 @@ bool Vizinhancas::inter_swap22(Solucao &s){
         //cout << "melhor rota2: " << melhor_e << " " << melhor_b << endl;
         //cout << "melhor i: " << melhor_i << " no turno" << turno_i << endl;
         //cout << "melhor j: " << melhor_j << " no turno" << turno_j << endl;  
-        dias[melhor_d].printa_rota(melhor_a);
-        dias[melhor_e].printa_rota(melhor_b);
+        //dias[melhor_d].printa_rota(melhor_a);
+        //dias[melhor_e].printa_rota(melhor_b);
 
         //debug
         vector<int>& rota1 = (turno_i == 1) ? dias[melhor_d].rotas[melhor_a].sequencia_am : dias[melhor_d].rotas[melhor_a].sequencia_pm;
