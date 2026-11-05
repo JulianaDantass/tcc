@@ -1,20 +1,21 @@
-#include "resultados.h"
+#include "manual.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <limits>
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
 
-Resultados::Resultados(Instancia *d) {
+Manual::Manual(Instancia *d) {
     deposito = 0;
     dados = d;
 }
 
-std::string Resultados::trim(const std::string& str) {
+std::string Manual::trim(const std::string& str) {
 
     size_t primeiro = str.find_first_not_of(" \t\r\n");
     if (primeiro == std::string::npos) return "";
@@ -22,19 +23,20 @@ std::string Resultados::trim(const std::string& str) {
     return str.substr(primeiro, (ultimo - primeiro + 1));
 }
 
-void Resultados::printa_microareas() {
+void Manual::printa_microareas() {
    
-    for(int i = 0; i < microareas.size(); i++){
-        std::cout << "id: " << microareas[i].id << endl;
+    for(int i = 0; i < dados->microareas.size(); i++){
+        std::cout << "id: " << dados->microareas[i].id << endl;
         
-        for(int j = 0; j < microareas[i].clientes.size(); j++){
-            std::cout << microareas[i].clientes[j] << " ";
+        for(int j = 0; j < dados->microareas[i].clientes.size(); j++){
+            std::cout << dados->microareas[i].clientes[j] << " ";
         }
         std::cout << endl;
     }
 }
 
-int Resultados::ler_csv(string caminho){
+/*
+int Manual::ler_csv(string caminho){
     
     std::ifstream arquivo(caminho);
     std::string linha;
@@ -78,8 +80,8 @@ int Resultados::ler_csv(string caminho){
 
     return 0;        
 }
-
-int Resultados::salvar_solucao_manual(Solucao &si, std::string nome_saida) {
+*/
+int Manual::salvar_solucao_manual(Solucao &si, std::string nome_saida) {
 
     std::ofstream arquivo(nome_saida);
     
@@ -87,53 +89,95 @@ int Resultados::salvar_solucao_manual(Solucao &si, std::string nome_saida) {
         std::cerr << "Erro: Não foi possível criar o arquivo " << nome_saida << ".\n";
         return false;
     }
-    
-    for(int i=0; i< microareas.size();i++){
-        arquivo << "microarea" << microareas[i].id << " possui " << microareas[i].clientes.size() << " clientes.\n";
+    for(int i=0; i<dados->microareas.size(); i++){
+        std::cout << "microarea " << i << "clientes: " << dados->microareas[i].clientes.size() << std::endl;
     }
-
-    
     std::vector<Rotas_diarias>& dias = si.get_dias_planejamento();
     int cont_dias_vazios = 0;
     for(int i=0; i < si.get_quantidade_dias(); i++){
         arquivo << "DIA " << i+1 << ":\n";
         
         int cont_rotas_vazias = 0;
-        for(int j = 0; j < dias[i].rotas.size(); j++){            
+        for(int j = 0; j < dias[i].rotas.size(); j++){   
+            
+            
+            arquivo << "agente " << j << ":\n";
+            arquivo << "    manhã: ";
+            
+            double tempo = 0;
+            for(int k = 0; k < dias[i].rotas[j].sequencia_am.size(); k++){
 
-            arquivo << "agente " << j+1 << ": ";
-            for(int k = 0; k < dias[i].rotas[j].sequencia.size(); k++){
-                
-                if(dias[i].rotas[j].sequencia.size() == 1){
-                    cont_rotas_vazias++;
+                arquivo << dias[i].rotas[j].sequencia_am[k] << ", ";
+                if(k == dias[i].rotas[j].sequencia_am.size()-1){
+                    continue;
                 }else{
-                    arquivo << dias[i].rotas[j].sequencia[k] << ", ";
+                    int id = dias[i].rotas[j].sequencia_am[k];
+                    int id_p = dias[i].rotas[j].sequencia_am[k+1];
+                    tempo += dados->matriz_tempo[id][id_p];
                 }
-               
             }
-            arquivo << endl;
+
+            if(dias[i].rotas[j].sequencia_am.size() > 1){
+                tempo += dados->duracao_visita_h * (dias[i].rotas[j].sequencia_am.size()-2);    
+            }
+            double dif = std::fabs(tempo- dias[i].rotas[j].tempo_am);
+            if(dif > dados->eps){
+                cout << "dia e rota: " << i << " e " << j << endl;
+                cout << "deu errado am. calculado: " << tempo << " armazenado: " << dias[i].rotas[j].tempo_am; 
+            }
+
+            tempo = 0;
+            arquivo << "\n    tarde: ";
+
+            for(int k = 0; k < dias[i].rotas[j].sequencia_pm.size(); k++){
+                arquivo << dias[i].rotas[j].sequencia_pm[k] << ", ";
+                if(k == dias[i].rotas[j].sequencia_pm.size()-1){
+                    continue;
+                }else{
+                    int id = dias[i].rotas[j].sequencia_pm[k];
+                    int id_p = dias[i].rotas[j].sequencia_pm[k+1];
+                    //cout << id << " e " << id_p << endl;
+                    tempo += dados->matriz_tempo[id][id_p];
+                }
+            }
+            if(dias[i].rotas[j].sequencia_pm.size() > 1){
+                tempo += dados->duracao_visita_h * (dias[i].rotas[j].sequencia_pm.size()-2);    
+            }
+            dif = std::fabs(tempo- dias[i].rotas[j].tempo_pm);
+            if(dif > dados->eps){
+                cout << "dia e rota: " << i << " e " << j << endl;
+                cout << "deu errado pm. calculado: " << tempo << " armazenado: " << dias[i].rotas[j].tempo_pm; 
+            }
+            arquivo << std::endl;
         }
+        
 
         if(cont_rotas_vazias == 5){
             cont_dias_vazios++;
         }
     }
 
-    arquivo << "FORAM NECESSARIOS EM DIAS: " << (dados->qtd_dias_planejamento - cont_dias_vazios) << "\n";
-    arquivo << "TEMPO TOTAL GASTO EM HORAS: " << si.get_fo() << std::endl; 
+    int qtd_dias = (si.get_quantidade_dias() - cont_dias_vazios);
+    int qtd_semanas = qtd_dias / 2; 
+    if(qtd_dias % 2 > 0){
+        qtd_semanas++;
+    }
+    arquivo << "FORAM NECESSARIOS EM SEMANAS (considerando que há 2 dias de visita): " << qtd_semanas << "\n";
+    arquivo << "FORAM NECESSARIOS EM DIAS: " << qtd_dias << std::endl;
+    arquivo << "TEMPO TOTAL (HORAS): " << si.get_fo() << std::endl; 
     
     arquivo.close();
     return true;
 }
 
 // Gera uma rota gulosa (Nearest Neighbor) a partir de um ponto de partida
-std::vector<int> Resultados::gerar_ordem_vizinho_mais_proximo(int no_inicial, const std::vector<int>& clientes_microarea) {
+std::vector<int> Manual::gerar_ordem_vizinho_mais_proximo(const std::vector<int>& clientes_microarea) {
     
     std::vector<int> nao_visitados = clientes_microarea;
     std::vector<int> rota_ordenada;
     rota_ordenada.reserve(clientes_microarea.size());
 
-    int no_atual = no_inicial;
+    int no_atual = deposito;
 
     while (!nao_visitados.empty()) {
         double menor_tempo = std::numeric_limits<double>::max();
@@ -161,9 +205,9 @@ std::vector<int> Resultados::gerar_ordem_vizinho_mais_proximo(int no_inicial, co
 }
 
 
-int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_saida){
+int Manual::gerar_solucao_manual(std::string nome_entrada, std::string nome_saida){
     
-    ler_csv(nome_entrada);
+    //ler_csv(nome_entrada);
     //printa_microareas();
     
     Solucao si(dados->qtd_dias_planejamento);
@@ -171,17 +215,18 @@ int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_
 
     int cont_servidos = 0;
         // 1. Converte o tamanho para int
-    int num_microareas = static_cast<int>(microareas.size());
+    int num_microareas = static_cast<int>(dados->microareas.size());
 
     // 2. Pré-processamento das filas usando int
     std::vector<std::vector<int>> filas_microareas(num_microareas);
     std::vector<int> pos_cliente(num_microareas, 0);
 
+    
     for (int i = 0; i < num_microareas; i++) {
-        filas_microareas[i] = gerar_ordem_vizinho_mais_proximo(deposito, microareas[i].clientes);
+        filas_microareas[i] = gerar_ordem_vizinho_mais_proximo(dados->microareas[i].clientes);
     }
 
-    // 3. No loop principal dos dias/agentes
+    // Loop principal dos dias/agentes
     for (int d = 0; d < dados->qtd_dias_planejamento; d++) {
         
         if (cont_servidos >= dados->quantidade_clientes) {
@@ -190,23 +235,24 @@ int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_
 
         Rotas_diarias& dia_atual = dias[d];
 
-        // Loop dos agentes utilizando int
         for (int i = 0; i < num_microareas; i++) {
             
-            if (pos_cliente[i] >= static_cast<int>(filas_microareas[i].size())) {
+            // Armazena o tamanho uma única vez aqui para evitar casts e warnings de signed/unsigned
+            if (pos_cliente[i] >= filas_microareas[i].size()) {
                 continue;
             }
 
             bool trocou_turno_hoje = false;
 
-            while (pos_cliente[i] < static_cast<int>(filas_microareas[i].size())) {
+            // Agora o while roda de forma limpa, sem casts poluindo a condição
+            while (pos_cliente[i] < filas_microareas[i].size()) {
+
                 int id_cliente = filas_microareas[i][pos_cliente[i]];
                 
                 int ult_loc = dia_atual.ultimo_no_rota(i);
                 double tempo_viagem = dados->matriz_tempo[ult_loc][id_cliente];
-                double tempo_retorno = dados->matriz_tempo[id_cliente][deposito];
+                double tempo_retorno = dados->matriz_tempo[id_cliente][deposito]; 
 
-                // Agora 'i' é int e entra perfeitamente na assinatura da função
                 int status = dia_atual.adicionar_visita(id_cliente, i, tempo_viagem, tempo_retorno);
 
                 if (status == 0) {
@@ -214,6 +260,8 @@ int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_
                     cont_servidos++;
                 } else {
                     if (!trocou_turno_hoje) {
+                        ult_loc = dia_atual.ultimo_no_rota(i);
+                        tempo_retorno = dados->matriz_tempo[ult_loc][deposito];
                         dia_atual.troca_turno(i, tempo_retorno);
                         trocou_turno_hoje = true; 
                     } else {
@@ -221,13 +269,21 @@ int Resultados::gerar_solucao_manual(std::string nome_entrada, std::string nome_
                     }
                 }
             }
-        }
 
+            int ult_loc = dia_atual.ultimo_no_rota(i);
+            if(ult_loc != 0){
+                dia_atual.finaliza_turno(i, dados->matriz_tempo[ult_loc][deposito]);
+            }
+        }
+    
         si.adiciona_dia(dia_atual);
     }
-    cout << "servidos/total: " << cont_servidos << "/ " << dados->matriz_tempo.size()-1 << endl;
+    
     si.calcula_fo();
     salvar_solucao_manual(si, nome_saida);
+
+    return 0; // Adicionado para satisfazer o retorno int da função
+    
 }
 
        

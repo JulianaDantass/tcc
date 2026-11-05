@@ -8,10 +8,10 @@
 #define MAX_HORAS_PM 4
 #define EPSILON  0.0001
 
-Rotas_diarias::Rotas_diarias(int n_agentes, double d){
+Rotas_diarias::Rotas_diarias(int n_agentes, double d) {
     
     duracao_visita_h= d;
-    turno.resize(n_agentes); //eu tenho um valor int associado a cada agente   
+    turno.resize(n_agentes); //eu tenho um valor int associado a cada agente
     
     for(int i = 0; i < n_agentes; i++){
         rotas.push_back({contador_id, std::vector<int>{0}, std::vector<int>{}});
@@ -43,7 +43,6 @@ int Rotas_diarias::adicionar_visita(int p, int a, double d, double t_volta_posto
     if(eh_impossivel > 0){
         return 1;
     }else{        
-
         if(turno[a] == 1){
             //std::cout << "rota: " << a << " / adicionado em am: " << p << " com valor " << d << std::endl;
             rotas[a].sequencia_am.push_back(p);
@@ -84,6 +83,8 @@ int Rotas_diarias::visita_possivel(int agente, double custo_total){
 
 //retorna o ultimo paciente visitado pelo agente
 int Rotas_diarias::ultimo_no_rota(int ag){ 
+    
+    std::cout << "agente" << ag << std::endl;
     if(turno[ag] == 1){
         return rotas[ag].sequencia_am.back();
     }else{
@@ -134,6 +135,7 @@ int Rotas_diarias::dia_encerrado(){
 
     return flag_todos_agentes_encerrados;
 }
+
 
 double Rotas_diarias::get_tempo_total_dia(){
 

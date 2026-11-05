@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <string>
 
-#define EPSILON 1e-4 //margem de tolerancia
 
 
 Vizinhancas::Vizinhancas(const Instancia *d){
@@ -74,7 +73,7 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
         }
     }
 
-    if (melhor_delta < -double(EPSILON)){
+    if (melhor_delta < -dados->eps){
 
         //tem que checar se essa posicao está certa
         //posicao da tarde
@@ -174,7 +173,7 @@ bool Vizinhancas::intra_swap22(Solucao &s){
         }   
     }
 
-    if (melhor_delta < -double(EPSILON)){
+    if (melhor_delta < -dados->eps){
 
         //cout << "intra swap 22" << endl;
         //cout << "melhor i: " << melhor_i << " / melhor j: " << melhor_j << endl;
@@ -312,7 +311,7 @@ bool Vizinhancas::inter_shift10(Solucao &s){
             }
         }
     }
-    if (melhor_delta < -double(EPSILON)){
+    if (melhor_delta < -dados->eps){
 
         vector<int>& rota1 = (turno_i == 1) ? dias[melhor_d].rotas[melhor_a].sequencia_am : dias[melhor_d].rotas[melhor_a].sequencia_pm;
         vector<int>& rota2 = (turno_j == 1) ? dias[melhor_e].rotas[melhor_b].sequencia_am : dias[melhor_e].rotas[melhor_b].sequencia_pm;
@@ -462,7 +461,7 @@ bool Vizinhancas::inter_swap22(Solucao &s){
         }
     }
 
-    if (melhor_delta < -double(EPSILON)){
+    if (melhor_delta < -dados->eps){
 
         //cout << endl << "melhor rota1: " << melhor_d << " " << melhor_a << endl;
         //cout << "melhor rota2: " << melhor_e << " " << melhor_b << endl;

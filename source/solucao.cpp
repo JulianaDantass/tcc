@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <climits>
+#include <cmath>
 #include <vector>
 
 
@@ -18,7 +19,23 @@ std::vector<Rotas_diarias>& Solucao::get_dias_planejamento(){
 
 int Solucao::get_quantidade_dias() const{
     
-    return dias_planejamento.size(); 
+    int cont_dias_vazios = 0;
+
+    for(int i=0; i < dias_planejamento.size(); i++){
+        
+        int cont_rotas_vazias = 0;
+        for(int j = 0; j < dias_planejamento[i].rotas.size(); j++){   
+            
+            if(dias_planejamento[i].rotas[j].sequencia_am.size() <= 1 and dias_planejamento[i].rotas[j].sequencia_pm.size() == 0){
+                cont_rotas_vazias++;
+            }
+        }    
+        if(cont_rotas_vazias == 5){
+            cont_dias_vazios++;
+        }
+    }
+
+    return dias_planejamento.size() - cont_dias_vazios; 
 }    
 
 double Solucao::get_fo() const{
@@ -63,15 +80,18 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
         return false;
     }
 
-    arquivo << "Pacientes prioritários: ";
-    for(int i=0; i<priori.size(); i++){
-        
-        arquivo << priori[i] << " "; 
-    }
-    arquivo << "\nTotal de prioritários: " << priori.size() << std::endl;
-    arquivo << "\nTotal de não prioritários: " << n_priori.size() << std::endl;
     
-    int cont_dias_vazios = 0;
+    arquivo << "\nTotal de prioritários: " << priori.size() << std::endl;
+    if(priori.size()>0){
+        arquivo << "Pacientes prioritários: ";
+        for(int i=0; i<priori.size(); i++){
+        
+            arquivo << priori[i] << " "; 
+        }
+    }
+    arquivo << "Total de não prioritários: " << n_priori.size() << std::endl;
+    
+    std::vector<int>pacientes_por_agente(dias_planejamento[0].rotas.size(), 0); 
     for(int i=0; i < dias_planejamento.size(); i++){
         arquivo << "DIA " << i+1 << ":\n";
         
@@ -85,18 +105,35 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
                 arquivo << dias_planejamento[i].rotas[j].sequencia_am[k] << ", ";
                
             }
+            if(dias_planejamento[i].rotas[j].sequencia_am.size() > 1){
+                pacientes_por_agente[j] += dias_planejamento[i].rotas[j].sequencia_am.size()-2;
+            }
             arquivo << "\n           tarde: ";
             for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia_pm.size(); k++){
                 
                 arquivo << dias_planejamento[i].rotas[j].sequencia_pm[k] << ", ";
                
             }
+            if(dias_planejamento[i].rotas[j].sequencia_am.size() > 0){
+                pacientes_por_agente[j] += dias_planejamento[i].rotas[j].sequencia_pm.size()-2;
+            }
             arquivo << std::endl;
         }
     }
-
-    arquivo << "FORAM NECESSARIOS EM DIAS: " << (dias_planejamento.size()) << "\n";
-    arquivo << "TEMPO TOTAL GASTO EM HORAS: " << funcao_objetivo << std::endl; 
+    
+    int j=0;
+    for(int i:pacientes_por_agente){
+        arquivo << "agente " << j+1 << " atendeu " << i << " pacientes\n";
+        j++;
+    }
+    int qtd_dias = dias_planejamento.size();
+    int qtd_semanas = qtd_dias / 2; 
+    if(qtd_dias % 2 > 0){
+        qtd_semanas++;
+    }
+    arquivo << "FORAM NECESSARIOS EM SEMANAS (considerando que há 2 dias de visita): " << qtd_semanas << "\n";
+    arquivo << "FORAM NECESSARIOS EM DIAS: " << (dias_planejamento.size()) << std::endl;
+    arquivo << "TEMPO TOTAL (HORAS): " << this->funcao_objetivo << std::endl; 
     
     arquivo.close();
 }

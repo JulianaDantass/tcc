@@ -32,6 +32,7 @@ class Rotas_diarias{
         int visita_possivel(int agente, double custo_total);
         int ultimo_no_rota(int ag);
         int dia_encerrado();
+        bool todas_microareas_atendidas();
         double get_tempo_total_dia();
 
         double get_tempo_disponivel_am(int ag);

@@ -13,10 +13,9 @@
 
 using namespace std;
 
-#define EPSILON  0.001
 #define QTD_VIZINHANCAS_INTER 2
 #define QTD_VIZINHANCAS_INTRA 2
-#define MAX_ITER 250
+#define MAX_ITER 300
 
 
 Heuristica::Heuristica(Instancia* dados_atuais){
@@ -47,7 +46,7 @@ void Heuristica::verifica_fo( Solucao &s){
 			int tam1 = dias[i].rotas[j].sequencia_am.size(); 
 			int tam2 = dias[i].rotas[j].sequencia_pm.size();
 
-			if(tam1 > 0){
+			if(tam1 > 1){
 				for (int k = 0; k < dias[i].rotas[j].sequencia_am.size()-1; k++) {
 					double t = dados->matriz_tempo[dias[i].rotas[j].sequencia_am[k]][dias[i].rotas[j].sequencia_am[k+1]];
 					t_total += t;
@@ -69,16 +68,20 @@ void Heuristica::verifica_fo( Solucao &s){
 				t_pm += 0.25* qtd_pm;
 			}
 
-			//cout << "dia " << i << " rota " << j << endl;
-			if(t_am - dias[i].rotas[j].tempo_am > double(EPSILON)){
-				dias[i].printa_rota(j);
+			double dif = std::fabs(t_am - dias[i].rotas[j].tempo_am);
+			if(dif > dados->eps){
+				cout << "dif: " << std::fixed << std::setprecision(10)<< dif << endl;
+				cout << "dia " << i << " rota " << j << endl;
+				//dias[i].printa_rota(j);
 				std::cout << "Tempos am não batem -> dia " << i << " rota " << j << endl;
 				std::cout << "certo: " << t_am << " calculado: " << dias[i].rotas[j].tempo_am << endl;
 				getchar();
 			}
 
-			if(t_pm - dias[i].rotas[j].tempo_pm > double(EPSILON)){
-				dias[i].printa_rota(j);
+			dif = std::fabs(t_pm - dias[i].rotas[j].tempo_pm);
+			if(dif > dados->eps){
+				cout << "dia " << i << " rota " << j << endl;
+				//dias[i].printa_rota(j);
 				std::cout << "Tempos pm não batem ";
 				std::cout << "certo: " << t_pm << " calculado: " << dias[i].rotas[j].tempo_pm << endl;
 				getchar();
@@ -87,8 +90,8 @@ void Heuristica::verifica_fo( Solucao &s){
     } 
 	 
 	t_total += 0.25*(dados->quantidade_clientes-1);	
-		
-	if (abs(t_total - s.get_fo()) > double(EPSILON)){
+	double dif = std::fabs(t_total - s.get_fo());
+	if (dif > dados->eps){
 		std::cout << "Tempos não batem" << endl;
         std::cout << "certo: " << setprecision(3) << t_total << " fo: " << s.get_fo() << endl;
 		getchar();        
@@ -118,11 +121,15 @@ Solucao Heuristica::solucao_inicial(){
 	int cont_priori_servidos = 0;
 	bool flag_priori_servidos = 0;
 	while(1){
+
+		if(dados->clientes_prioritarios.size() == 0){
+			break;
+		}
 		//pra saber qtos prioritarios ja foram servidos
 		bool flag_dia_encerrado = 0;
-
+		int agente_atual = 0;
 		//adicionando o paciente prioritario que oferece menor distancia ao agente considerando sua rota 
-		for(int i = 0; i < dados->numero_agentes; i++){
+		while(1){
 
 			if(cont_priori_servidos == dados->clientes_prioritarios.size()){
 				flag_priori_servidos = 1;
@@ -133,15 +140,25 @@ Solucao Heuristica::solucao_inicial(){
 				flag_dia_encerrado = 1;
 				break;
 			}
+
+			if(dia->get_turno(agente_atual) == 3){
+				agente_atual++;
+			}
+
+			if(agente_atual == dados->numero_agentes){
+				agente_atual = 0;
+			}
 			//sabendo qual foi a ultima casa visitada pelo agente
-			ult_loc = dia->ultimo_no_rota(i);
+			ult_loc = dia->ultimo_no_rota(agente_atual);
 			
 			//criando um paciente p qualquer como o melhor
 			vector<pair<int,double>> indice_e_distancia;
 			
-			for (int j = 0; j < dados->clientes_prioritarios.size(); j++) {
+			for (int j = 0; j < dados->microareas[agente_atual].clientes.size(); j++) {
 				
-				int id = dados->clientes_prioritarios[j];
+				
+				int id = dados->microareas[agente_atual].clientes[j];
+				//cout << agente_atual << " id: " << id; 
 
 				if (!pacientes_inseridos[id]) {
 					double distancia = dados->matriz_tempo[ult_loc][id]; 
@@ -166,22 +183,22 @@ Solucao Heuristica::solucao_inicial(){
 
 			pair<int,double> paciente_sorteado = indice_e_distancia[indice_sorteado];
 			
-			int id = dados->clientes_prioritarios[paciente_sorteado.first];
+			int id = dados->microareas[agente_atual].clientes[paciente_sorteado.first];
 			double dist_volta_posto = dados->matriz_tempo[id][0];
 			//std::cout << ult_loc << " e " << id << " = " << paciente_sorteado.second;
-			int retorno_adicionar = dia->adicionar_visita(id, i, paciente_sorteado.second, dist_volta_posto);
+			int retorno_adicionar = dia->adicionar_visita(id, agente_atual, paciente_sorteado.second, dist_volta_posto);
 
 			//se o retorno 1, 2 ou 3 significa que nao deu certo a inserção pq violaria o horario e o agente teve que retornar ao posto
 			if(retorno_adicionar > 0){
-				ult_loc = dia->ultimo_no_rota(i);
+				ult_loc = dia->ultimo_no_rota(agente_atual);
 				dist_volta_posto = dados->matriz_tempo[ult_loc][0];
-				dia->troca_turno(i, dist_volta_posto);
+				dia->troca_turno(agente_atual, dist_volta_posto);
 				continue;
 			}
 			
 			//adicionando que o paciente foi servido
 			cont_priori_servidos++;
-			pacientes_inseridos[dados->clientes_prioritarios[paciente_sorteado.first]] = true;
+			pacientes_inseridos[dados->microareas[agente_atual].clientes[paciente_sorteado.first]] = true;
 			
 		}
 		
@@ -202,32 +219,46 @@ Solucao Heuristica::solucao_inicial(){
 
 	int cont_npriori_servidos = 0;
 	bool flag_npriori_servidos = 0;
+	int microarea_atual = 0;
 	//ALOCAR OS PACIENTES NAO PRIORITÁRIOS
 	while(1){
 		//é um contador pra saber qtos agentes tem o dia encerrado
 		int flag_dia_encerrado = 0;
-		
+		int agente_atual = 0;
+			
 		//adicionando o paciente n prioritario que oferece menor distancia ao agente considerando sua rota 
-		for(int i = 0; i < dados->numero_agentes; i++){
+		while(1){
 
-			if(cont_npriori_servidos == dados->clientes_nao_prioritarios.size()){
+									
+			if(dados->todos_servidos_microarea(microarea_atual)){
+				microarea_atual++;
+			}
+
+			if(microarea_atual == dados->microareas.size()){
 				flag_npriori_servidos = 1;
 				break;
 			}
-			
 			if(dia->dia_encerrado()){
 				flag_dia_encerrado = 1;
 				break;
 			}
-			//sabendo qual foi a ultima casa visitada pelo agente
-			ult_loc = dia->ultimo_no_rota(i);
+
+			if(dia->get_turno(agente_atual) == 3){
+				agente_atual++;
+			}
+
+			if(agente_atual == dados->microareas.size()){
+				agente_atual = 0;
+			}
+
+			ult_loc = dia->ultimo_no_rota(agente_atual);
 			
 			//criando um paciente p qualquer como o melhor
 			vector<pair<int,double>> indice_e_distancia;
 			
-			for (int j = 0; j < dados->clientes_nao_prioritarios.size(); j++) {
+			for (int j = 0; j < dados->microareas[microarea_atual].clientes.size(); j++) {
 				
-				int id = dados->clientes_nao_prioritarios[j];
+				int id = dados->microareas[microarea_atual].clientes[j];
 
 				if (!pacientes_inseridos[id]) {
 					double distancia = dados->matriz_tempo[ult_loc][id]; 
@@ -250,23 +281,27 @@ Solucao Heuristica::solucao_inicial(){
 			std::uniform_int_distribution<size_t> dist_indice(0, limite - 1);
 			size_t indice_sorteado = dist_indice(gen);
 
+			cout << indice_sorteado <<  "/" << indice_e_distancia.size() << endl;
 			pair<int,double> paciente_sorteado = indice_e_distancia[indice_sorteado];
 			
-			int id = dados->clientes_nao_prioritarios[paciente_sorteado.first];
+			int id = dados->microareas[microarea_atual].clientes[paciente_sorteado.first];
+			cout << "opa ";
 			double dist_volta_posto = dados->matriz_tempo[id][0];
 			//std::cout << ult_loc << " e " << id << " = " << paciente_sorteado.second << endl;
-			int retorno_adicionar = dia->adicionar_visita(id, i, paciente_sorteado.second, dist_volta_posto);
+			int retorno_adicionar = dia->adicionar_visita(id, agente_atual, paciente_sorteado.second, dist_volta_posto);
 
 			if(retorno_adicionar > 0){
-				ult_loc = dia->ultimo_no_rota(i);
+				ult_loc = dia->ultimo_no_rota(agente_atual);
 				dist_volta_posto = dados->matriz_tempo[ult_loc][0];
-				dia->troca_turno(i, dist_volta_posto);
+				dia->troca_turno(agente_atual, dist_volta_posto);
 				continue;
 			}
+			cout << "opa2 ";
 
 				//adicionando que o paciente foi servido
+			dados->microareas[microarea_atual].contador++;
 			cont_npriori_servidos++;
-			pacientes_inseridos[dados->clientes_nao_prioritarios[paciente_sorteado.first]] = true;
+			pacientes_inseridos[dados->microareas[microarea_atual].clientes[paciente_sorteado.first]] = true;
 			
 		}
 		
@@ -293,8 +328,11 @@ Solucao Heuristica::solucao_inicial(){
 			break;
 		}
 	}
+	
 	//tem que ver a solucao final
 	si.calcula_fo();
+	//string saida = "proposta_pos_construcao.txt";
+	//si.salva_solucao_arquivo(saida, dados->clientes_prioritarios, dados->clientes_nao_prioritarios);
 	//si.exibe_solucao();
 	return si;
 }
@@ -393,76 +431,98 @@ void Heuristica::perturbacao(Solucao &s){
     std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     if (dias.empty()) return;
 
-    int ind_ultdia = dias.size() - 1;
     std::uniform_int_distribution<> distrib;
 
     // 1. Sorteia dia e rota de origem
-    int dia1_sorteado = distrib(gen, decltype(distrib)::param_type(0, ind_ultdia));
-    
-    if (dias[dia1_sorteado].rotas.empty()) return;
-    int rota1_sorteada = distrib(gen, decltype(distrib)::param_type(0, dias[dia1_sorteado].rotas.size() - 1));
+    int dia1_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    int rota1_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes - 1));
     int turno1 = distrib(gen, decltype(distrib)::param_type(1, 2));
-
-    std::vector<int>* rota1 = (turno1 == 1) ? &dias[dia1_sorteado].rotas[rota1_sorteada].sequencia_am 
-                                          : &dias[dia1_sorteado].rotas[rota1_sorteada].sequencia_pm;
+    auto rota1 = dias[dia1_sorteado].rotas[rota1_sorteada];
 
     // Proteção: A rota precisa ter pelo menos 3 elementos para poder remover um elemento interno
-    if (rota1->size() < 3) return;
+    while(turno1 == 1 and rota1.sequencia_am.size() < 3){
+		dia1_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    	rota1_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes - 1));
+		rota1 = dias[dia1_sorteado].rotas[rota1_sorteada];
+	} 
 
-    int i_sorteado = distrib(gen, decltype(distrib)::param_type(1, rota1->size() - 2));
+	while(turno1 == 2 and rota1.sequencia_pm.size() < 3){
+		dia1_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    	rota1_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes - 1));
+		rota1 = dias[dia1_sorteado].rotas[rota1_sorteada];
+	}
+
+	std::vector<int>* rota1_turno = (turno1 == 1) ? &dias[dia1_sorteado].rotas[rota1_sorteada].sequencia_am 
+                                          : &dias[dia1_sorteado].rotas[rota1_sorteada].sequencia_pm; 
+    
+	int i_sorteado = distrib(gen, decltype(distrib)::param_type(1, rota1_turno->size() - 2));
 	
 	//debug
 	/*
-	cout << "antes rota1: ";
+	cout << "dia1: " << dia1_sorteado << " rota1: " << rota1_sorteada << " turno1: " << turno1 << " i:" << i_sorteado << endl;
+	cout << "antes: ";
 	dias[dia1_sorteado].printa_rota(rota1_sorteada);
-	cout << "turno1: " << turno1 << " i:" << i_sorteado << endl;
 	*/
 
-    int dia2 = ind_ultdia;
-    if (dias[dia2].rotas.empty()) return;
-    int rota2_sorteada = distrib(gen, decltype(distrib)::param_type(0, dias[dia2].rotas.size() - 1));
+    int dia2_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    int rota2_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes-1));
     int turno2 = distrib(gen, decltype(distrib)::param_type(1, 2));
 
-    std::vector<int>* rota2 = (turno2 == 1) ? &dias[dia2].rotas[rota2_sorteada].sequencia_am 
-                                          : &dias[dia2].rotas[rota2_sorteada].sequencia_pm;
+	auto rota2 = dias[dia2_sorteado].rotas[rota2_sorteada];
 
-    if (rota2->empty()) return;
-    int j_sorteado = distrib(gen, decltype(distrib)::param_type(1, rota2->size() - 1));
+	while(dia2_sorteado == dia1_sorteado and rota1_sorteada == rota2_sorteada and turno1 == turno2){
+		dia2_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    	rota2_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes-1));
+		rota2 = dias[dia2_sorteado].rotas[rota2_sorteada];
+	} 
+
+	while(turno2 == 1 and rota2.sequencia_am.size() < 3){
+		dia2_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    	rota2_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes-1));
+		rota2 = dias[dia2_sorteado].rotas[rota2_sorteada];
+	} 
+
+	while(turno2 == 2 and rota2.sequencia_pm.size() < 3){
+		dia2_sorteado = distrib(gen, decltype(distrib)::param_type(0, dias.size()-1));
+    	rota2_sorteada = distrib(gen, decltype(distrib)::param_type(0, dados->numero_agentes-1));
+		rota2 = dias[dia2_sorteado].rotas[rota2_sorteada];
+	} 
+
+	std::vector<int>* rota2_turno = (turno2 == 1) ? &dias[dia2_sorteado].rotas[rota2_sorteada].sequencia_am : &dias[dia2_sorteado].rotas[rota2_sorteada].sequencia_pm; 
+    int j_sorteado = distrib(gen, decltype(distrib)::param_type(1, rota2_turno->size() - 1));
 
 	/*
-	cout << "antes rota2: ";
-	dias[dia2].printa_rota(rota2_sorteada);
-	cout << "turno2: " << turno2 << " j: " << j_sorteado << endl;
+	cout << "dia2: " << dia2_sorteado << " rota2: " << rota2_sorteada << " turno2: " << turno2 << " j:" << j_sorteado << endl;
+	dias[dia2_sorteado].printa_rota(rota2_sorteada);
 	*/
 
     // 3. Cálculo das variações de tempo
     double necessario1 = -dados->duracao_visita_h   
-                        + dados->matriz_tempo[(*rota1)[i_sorteado - 1]][(*rota1)[i_sorteado + 1]] 
-                        - dados->matriz_tempo[(*rota1)[i_sorteado - 1]][(*rota1)[i_sorteado]] 
-                        - dados->matriz_tempo[(*rota1)[i_sorteado]][(*rota1)[i_sorteado + 1]];
+                        + dados->matriz_tempo[(*rota1_turno)[i_sorteado - 1]][(*rota1_turno)[i_sorteado + 1]] 
+                        - dados->matriz_tempo[(*rota1_turno)[i_sorteado - 1]][(*rota1_turno)[i_sorteado]] 
+                        - dados->matriz_tempo[(*rota1_turno)[i_sorteado]][(*rota1_turno)[i_sorteado + 1]];
 
     double necessario2 = dados->duracao_visita_h  
-                        - dados->matriz_tempo[(*rota2)[j_sorteado - 1]][(*rota2)[j_sorteado]] 
-                        + dados->matriz_tempo[(*rota2)[j_sorteado - 1]][(*rota1)[i_sorteado]]
-                        + dados->matriz_tempo[(*rota1)[i_sorteado]][(*rota2)[j_sorteado]];
+                        - dados->matriz_tempo[(*rota2_turno)[j_sorteado - 1]][(*rota2_turno)[j_sorteado]] 
+                        + dados->matriz_tempo[(*rota2_turno)[j_sorteado - 1]][(*rota1_turno)[i_sorteado]]
+                        + dados->matriz_tempo[(*rota1_turno)[i_sorteado]][(*rota2_turno)[j_sorteado]];
 
     
 
-	cout << "necessario1 : " << necessario1 << " necessario2: " << necessario2 << endl;
     // 4. Identifica o elemento movido
-    int movido = (*rota1)[i_sorteado];
+    int movido = (*rota1_turno)[i_sorteado];
 
     // 5. Atualizações estruturais e de custos
-    if (turno1 == 2 && rota1->size() == 3) {
+    if (turno1 == 2 && rota1_turno->size() == 3) {
         dias[dia1_sorteado].retroceder_turno(rota1_sorteada); // ajuste se necessário
     }
 
     if (turno2 == 2) {
-        dias[dia2].rotas[rota2_sorteada].tempo_pm += necessario2;
-        dias[dia2].rotas[rota2_sorteada].sequencia_pm.insert(dias[dia2].rotas[rota2_sorteada].sequencia_pm.begin() + j_sorteado, movido);
+        dias[dia2_sorteado].rotas[rota2_sorteada].tempo_pm += necessario2;
+        dias[dia2_sorteado].rotas[rota2_sorteada].sequencia_pm.insert(dias[dia2_sorteado].rotas[rota2_sorteada].sequencia_pm.begin() + j_sorteado, movido);
     } else { 
-        dias[dia2].rotas[rota2_sorteada].tempo_am += necessario2;
-        dias[dia2].rotas[rota2_sorteada].sequencia_am.insert(dias[dia2].rotas[rota2_sorteada].sequencia_am.begin() + j_sorteado, movido);
+        dias[dia2_sorteado].rotas[rota2_sorteada].tempo_am += necessario2;
+        dias[dia2_sorteado].rotas[rota2_sorteada].sequencia_am.insert(dias[dia2_sorteado].rotas[rota2_sorteada].sequencia_am.begin() + j_sorteado, movido);
     }
 
     if (turno1 == 2) {
@@ -478,9 +538,9 @@ void Heuristica::perturbacao(Solucao &s){
 	dias[dia1_sorteado].printa_rota(rota1_sorteada);
 	cout << "turno1: " << turno1 << " i:" << i_sorteado << endl;
 	cout << "depois rota2: ";
-	dias[dia2].printa_rota(rota2_sorteada);
+	dias[dia2_sorteado].printa_rota(rota2_sorteada);
 	cout << "turno2: " << turno2 << " j: " << j_sorteado << endl;
-	cout << "fo atual: " << s.get_fo() << " delta: " << delta;
+	//cout << "fo atual: " << s.get_fo() << " delta: " << delta;
     */
    	double delta = necessario1 + necessario2;
 	s.set_fo(s.get_fo() + delta);
@@ -498,16 +558,16 @@ void Heuristica::ILS_RVND(std::string nome_saida){
     Solucao melhor_s = s;
 
     int iter = 0;
-    int max_iter = 250; // ou o critério de parada do seu ILS
 
     // --- LOOP ITERATIVO (NÃO RECURSIVO) ---
-    while (iter < max_iter) {
+    while (iter < MAX_ITER) {
         
         // Faz uma cópia para perturbar
         Solucao s_linha = s;
         
         // Aplica a perturbação
         perturbacao(s_linha);
+		verifica_fo(s);
         
         // Aplica a busca local na solução perturbada
         RVND(s_linha);
@@ -519,7 +579,7 @@ void Heuristica::ILS_RVND(std::string nome_saida){
                 melhor_s = s;
             }
         }
-        
+		std::cout << iter << endl;
         iter++;
     }
 	std::cout << "encerrou tudo" << endl;
