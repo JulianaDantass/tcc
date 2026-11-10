@@ -253,8 +253,226 @@ Solucao Heuristica::solucao_inicial(){
 	int cont_dias = 0;
 	Rotas_diarias* dia = &(dias.at(cont_dias));
 
-	
-	
+	//alocar o resto dos pacientes prioritários	
+	bool flag_priori_servidos = 0;
+	int microarea_atual = 0;
+	int agente_atual;
+	while(1){
+
+		//pra saber qtos prioritarios ja foram servidos
+		bool flag_dia_encerrado = 0;
+		agente_atual = 0;
+		//adicionando o paciente prioritario que oferece menor distancia ao agente considerando sua rota 
+		while(1){
+											
+			//std::cout << "cont priori: " << dados->microareas[microarea_atual].contador_prioritarios;
+			if(dados->todos_servidos_microarea(microarea_atual,1)){
+				microarea_atual++;
+			}
+
+			if(microarea_atual == dados->microareas.size()){
+				flag_priori_servidos = 1;
+				break;
+			}
+			if(dia->dia_encerrado()){
+				flag_dia_encerrado = 1;
+				break;
+			}
+
+			if(dia->get_turno(agente_atual) == 3){
+				agente_atual++;
+			}
+
+			if(agente_atual == dados->microareas.size()){
+				agente_atual = 0;
+			}
+			//sabendo qual foi a ultima casa visitada pelo agente
+			
+			ult_loc = dia->ultimo_no_rota(agente_atual);
+			
+			//criando um paciente p qualquer como o melhor
+			vector<pair<int,double>> indice_e_distancia;
+			
+			for (int j = 0; j < dados->microareas[microarea_atual].clientes_prioritarios.size(); j++) {
+				
+				int id = dados->microareas[microarea_atual].clientes_prioritarios[j];
+				//std::cout << agente_atual << " id: " << id; 
+
+				if (pacientes_inseridos[id] == false) {
+					
+					double distancia = dados->matriz_tempo[ult_loc][id]; 
+					indice_e_distancia.push_back(pair<int,double>(j, distancia));
+				}
+			}
+
+			//ordenando crescente
+			std::sort(indice_e_distancia.begin(), indice_e_distancia.end(), [](const pair<int,double>& a, const pair<int,double>& b) {
+        		return a.second < b.second;
+    		});
+
+			std::uniform_real_distribution<double> dist_alfa(0.0, 1.0);
+			double alfa = dist_alfa(gen);
+
+			// 3. Selecionar aleatoriamente um dos (alfa * |Ômega|) primeiros pares
+			if(indice_e_distancia.size()==0){
+				continue;
+			}
+			size_t limite = std::max<size_t>(1, std::ceil(alfa * indice_e_distancia.size()));
+			
+			// Distribuição para escolher um índice inteiro aleatório entre 0 e (limite - 1)
+			
+			std::uniform_int_distribution<size_t> dist_indice(0, limite - 1);
+			size_t indice_sorteado = dist_indice(gen);
+
+			pair<int,double> paciente_sorteado = indice_e_distancia[indice_sorteado];
+			
+			int id = dados->microareas[microarea_atual].clientes_prioritarios[paciente_sorteado.first];
+			double dist_volta_posto = dados->matriz_tempo[id][0];
+			//std::std::cout << ult_loc << " e " << id << " = " << paciente_sorteado.second;
+			int retorno_adicionar = dia->adicionar_visita(id, agente_atual, paciente_sorteado.second, dist_volta_posto);
+			//se o retorno 1, 2 ou 3 significa que nao deu certo a inserção pq violaria o horario e o agente teve que retornar ao posto
+			if(retorno_adicionar > 0){
+				
+				ult_loc = dia->ultimo_no_rota(agente_atual);
+				dist_volta_posto = dados->matriz_tempo[ult_loc][0];
+				dia->troca_turno(agente_atual, dist_volta_posto);
+				continue;
+			}
+			
+			//adicionando que o paciente foi servido
+			dados->microareas[microarea_atual].contador_prioritarios++;
+			pacientes_inseridos[id] = true;
+			
+		}
+		
+		//o dia de todos os agentes encerrou
+		if(flag_dia_encerrado){
+			si.adiciona_dia(dias[cont_dias]);
+			cont_dias++;
+			dia = &(dias.at(cont_dias));
+			
+		}
+		//se todos os clientes prioritarios foram servidos 
+		if(flag_priori_servidos){
+			break;
+		}
+	}
+	//dia->exibir_dia();
+
+	bool flag_npriori_servidos = 0;
+	microarea_atual = 0;
+	//ALOCAR OS PACIENTES NAO PRIORITÁRIOS
+	while(1){
+		//é um contador pra saber qtos agentes tem o dia encerrado
+		int flag_dia_encerrado = 0;
+		agente_atual = 0;	
+		//adicionando o paciente n prioritario que oferece menor distancia ao agente considerando sua rota 
+		while(1){			
+			if(dados->todos_servidos_microarea(microarea_atual,0)){
+				microarea_atual++;
+			}
+
+			if(microarea_atual == dados->microareas.size()){
+				flag_npriori_servidos = 1;
+				break;
+			}
+			if(dia->dia_encerrado()){
+				flag_dia_encerrado = 1;
+				break;
+			}
+
+			if(dia->get_turno(agente_atual) == 3){
+				agente_atual++;
+			}
+
+			if(agente_atual == dados->microareas.size()){
+				agente_atual = 0;
+			}
+
+			ult_loc = dia->ultimo_no_rota(agente_atual);
+			
+			//criando um paciente p qualquer como o melhor
+			vector<pair<int,double>> indice_e_distancia;
+			
+			for (int j = 0; j < dados->microareas[microarea_atual].clientes_nao_prioritarios.size(); j++) {
+				
+				
+				int id = dados->microareas[microarea_atual].clientes_nao_prioritarios[j];
+
+				if (!pacientes_inseridos[id]) {
+					//std::cout << id << endl;
+					double distancia = dados->matriz_tempo[ult_loc][id]; 
+					indice_e_distancia.push_back(pair<int,double>(j, distancia));
+				}
+			}
+			
+			//ordenando crescente
+			std::sort(indice_e_distancia.begin(), indice_e_distancia.end(), [](const pair<int,double>& a, const pair<int,double>& b) {
+        		return a.second < b.second;
+    		});
+
+			std::uniform_real_distribution<double> dist_alfa(0.0, 1.0);
+			double alfa = dist_alfa(gen);
+
+			// 3. Selecionar aleatoriamente um dos (alfa * |Ômega|) primeiros pares
+			if(indice_e_distancia.size()==0){
+				continue;
+			}
+			size_t limite = std::max<size_t>(1, std::ceil(alfa * indice_e_distancia.size()));
+			
+			// Distribuição para escolher um índice inteiro aleatório entre 0 e (limite - 1)
+			std::uniform_int_distribution<size_t> dist_indice(0, limite - 1);
+			size_t indice_sorteado = dist_indice(gen);
+
+			//std::cout << indice_sorteado <<  "/" << indice_e_distancia.size() << endl;
+			pair<int,double> paciente_sorteado = indice_e_distancia[indice_sorteado];
+			
+			int id = dados->microareas[microarea_atual].clientes_nao_prioritarios[paciente_sorteado.first];
+			double dist_volta_posto = dados->matriz_tempo[id][0];
+			//std::std::cout << ult_loc << " e " << id << " = " << paciente_sorteado.second << endl;
+			int retorno_adicionar = dia->adicionar_visita(id, agente_atual, paciente_sorteado.second, dist_volta_posto);
+
+			if(retorno_adicionar > 0){
+				ult_loc = dia->ultimo_no_rota(agente_atual);
+				dist_volta_posto = dados->matriz_tempo[ult_loc][0];
+				dia->troca_turno(agente_atual, dist_volta_posto);
+				continue;
+			}
+
+				//adicionando que o paciente foi servido
+			dados->microareas[microarea_atual].contador_nao_prioritarios++;
+			pacientes_inseridos[dados->microareas[microarea_atual].clientes_nao_prioritarios[paciente_sorteado.first]] = true;
+			
+		}
+		
+		
+		//o dia de todos os agentes encerrou
+		if(flag_dia_encerrado){
+			si.adiciona_dia(dias[cont_dias]);
+			cont_dias++;
+			dia = &(dias.at(cont_dias));
+			
+		}
+		
+		//se todos os clientes nao prioritarios foram servidos, adiciona o ultimo dia na solução 
+		if(flag_npriori_servidos){
+				 //adicionamos a volta ao posto caso nao tenha sido adicionada
+			si.adiciona_dia(dias[cont_dias]);
+			break;
+		}
+
+	}
+	//tem que ver a solucao final
+	//reorganiza_ult_dia(si);
+
+	std::vector<Rotas_diarias>& s = si.get_dias_planejamento();
+	for(Rotas_diarias& i : s){
+		for(int j = 0; j < i.rotas.size(); j++){
+			int id = i.ultimo_no_rota(j);
+			i.finaliza_turno(j, dados->matriz_tempo[id][0]);	
+		}
+	}
+	si.calcula_fo();
 	//string saida = "proposta_pos_construcao.txt";
 	//si.salva_solucao_arquivo(saida, dados->clientes_prioritarios, dados->clientes_nao_prioritarios);
 	//si.exibe_solucao();
