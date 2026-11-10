@@ -91,8 +91,10 @@ def calcular_matriz_dijkstra():
                 distancia = 0.0
             else:
                 distancia = nx.shortest_path_length(G, source=i, target=j, weight="length")
-            tempo = distancia/3000.0;  
-            linha.append(round(tempo, 3))
+            
+            tempo_minutos = (distancia / 50.0)  # Equivalente a (distancia / 3000.0) * 60
+            #tempo = distancia/3000.0;  
+            linha.append(round(tempo_minutos, 3))
                
         matriz_distancias.append(linha)
         print(cont)

@@ -12,7 +12,7 @@ class Solucao{
         std::vector<Rotas_diarias> dias_planejamento;
         double funcao_objetivo;
     public:
-        
+        Solucao();
         Solucao(int qtd_dias);
         void adiciona_dia(const Rotas_diarias& dia);
         void set_fo(double fo);
@@ -20,8 +20,10 @@ class Solucao{
         int get_quantidade_dias() const;                  
         std::vector<Rotas_diarias>& get_dias_planejamento();
         std::vector<Rotas_diarias> get_dias_planejamento_estatico();
+        Rotas_diarias& get_ultimo_dia();
+
         double calcula_fo();
         double get_fo() const;
-        bool salva_solucao_arquivo(std::string nome, std::vector<int>priori, std::vector<int>n_priori);
+        bool salva_solucao_arquivo(std::string nome);
 };
 

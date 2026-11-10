@@ -6,7 +6,10 @@
 #include <cmath>
 #include <vector>
 
+Solucao::Solucao(){
+    funcao_objetivo = 9999999;
 
+}
 Solucao::Solucao(int qtd){
     dias_planejamento.reserve(qtd);
     funcao_objetivo = 9999999;
@@ -16,6 +19,11 @@ Solucao::Solucao(int qtd){
 std::vector<Rotas_diarias>& Solucao::get_dias_planejamento(){
     return dias_planejamento;
 }
+
+Rotas_diarias& Solucao::get_ultimo_dia(){
+    return dias_planejamento[dias_planejamento.size()-1];
+}
+
 
 int Solucao::get_quantidade_dias() const{
     
@@ -71,7 +79,7 @@ std::vector<Rotas_diarias> Solucao::get_dias_planejamento_estatico(){
     return dias_planejamento;
 }
 
-bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std::vector<int>n_priori){
+bool Solucao::salva_solucao_arquivo(std::string arq){
 
     std::ofstream arquivo(arq);
  
@@ -81,17 +89,10 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
     }
 
     
-    arquivo << "\nTotal de prioritários: " << priori.size() << std::endl;
-    if(priori.size()>0){
-        arquivo << "Pacientes prioritários: ";
-        for(int i=0; i<priori.size(); i++){
-        
-            arquivo << priori[i] << " "; 
-        }
-    }
-    arquivo << "Total de não prioritários: " << n_priori.size() << std::endl;
-    
-    std::vector<int>pacientes_por_agente(dias_planejamento[0].rotas.size(), 0); 
+    //arquivo << "\nPrioritários: "; 
+    //arquivo << "Total de não prioritários: " << n_priori.size() << std::endl;
+    std::cout << "qtd dias: " << dias_planejamento.size();
+    std::vector<double>horas(dias_planejamento[0].rotas.size(), 0); 
     for(int i=0; i < dias_planejamento.size(); i++){
         arquivo << "DIA " << i+1 << ":\n";
         
@@ -105,25 +106,23 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
                 arquivo << dias_planejamento[i].rotas[j].sequencia_am[k] << ", ";
                
             }
-            if(dias_planejamento[i].rotas[j].sequencia_am.size() > 1){
-                pacientes_por_agente[j] += dias_planejamento[i].rotas[j].sequencia_am.size()-2;
-            }
+            
+            
+            
             arquivo << "\n           tarde: ";
             for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia_pm.size(); k++){
                 
                 arquivo << dias_planejamento[i].rotas[j].sequencia_pm[k] << ", ";
                
             }
-            if(dias_planejamento[i].rotas[j].sequencia_am.size() > 0){
-                pacientes_por_agente[j] += dias_planejamento[i].rotas[j].sequencia_pm.size()-2;
-            }
+            horas[j] += dias_planejamento[i].rotas[j].tempo_am + dias_planejamento[i].rotas[j].tempo_pm;
             arquivo << std::endl;
         }
     }
     
     int j=0;
-    for(int i:pacientes_por_agente){
-        arquivo << "agente " << j+1 << " atendeu " << i << " pacientes\n";
+    for(double i:horas){
+        arquivo << "agente " << j+1 << " horas: " << i/60.0 << "\n";
         j++;
     }
     int qtd_dias = dias_planejamento.size();
@@ -133,7 +132,7 @@ bool Solucao::salva_solucao_arquivo(std::string arq, std::vector<int>priori, std
     }
     arquivo << "FORAM NECESSARIOS EM SEMANAS (considerando que há 2 dias de visita): " << qtd_semanas << "\n";
     arquivo << "FORAM NECESSARIOS EM DIAS: " << (dias_planejamento.size()) << std::endl;
-    arquivo << "TEMPO TOTAL (HORAS): " << this->funcao_objetivo << std::endl; 
+    arquivo << "TEMPO TOTAL (HORAS): " << this->funcao_objetivo/60.0 << std::endl; 
     
     arquivo.close();
 }

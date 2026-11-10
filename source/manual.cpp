@@ -25,6 +25,7 @@ std::string Manual::trim(const std::string& str) {
 
 void Manual::printa_microareas() {
    
+    /*
     for(int i = 0; i < dados->microareas.size(); i++){
         std::cout << "id: " << dados->microareas[i].id << endl;
         
@@ -33,6 +34,7 @@ void Manual::printa_microareas() {
         }
         std::cout << endl;
     }
+    */
 }
 
 /*
@@ -90,7 +92,7 @@ int Manual::salvar_solucao_manual(Solucao &si, std::string nome_saida) {
         return false;
     }
     for(int i=0; i<dados->microareas.size(); i++){
-        std::cout << "microarea " << i << "clientes: " << dados->microareas[i].clientes.size() << std::endl;
+        std::cout << "microarea " << i << " clientes: " << dados->microareas[i].clientes_prioritarios.size() + dados->microareas[i].clientes_nao_prioritarios.size()<< std::endl;
     }
     std::vector<Rotas_diarias>& dias = si.get_dias_planejamento();
     int cont_dias_vazios = 0;
@@ -221,64 +223,135 @@ int Manual::gerar_solucao_manual(std::string nome_entrada, std::string nome_said
     std::vector<std::vector<int>> filas_microareas(num_microareas);
     std::vector<int> pos_cliente(num_microareas, 0);
 
+    int qtd_clientes_priori = 0;
+    for (int i = 0; i < num_microareas; i++) {
+        qtd_clientes_priori += dados->microareas[i].clientes_prioritarios.size();
+    }
     
     for (int i = 0; i < num_microareas; i++) {
-        filas_microareas[i] = gerar_ordem_vizinho_mais_proximo(dados->microareas[i].clientes);
+        filas_microareas[i] = gerar_ordem_vizinho_mais_proximo(dados->microareas[i].clientes_prioritarios);
     }
-
+    int cont_dias = 0;
+	Rotas_diarias* dia = &(dias.at(cont_dias));
     // Loop principal dos dias/agentes
-    for (int d = 0; d < dados->qtd_dias_planejamento; d++) {
-        
-        if (cont_servidos >= dados->quantidade_clientes) {
+    int d;
+    
+    int flag_priori_servidos = 0;
+    while(1){
+        int flag_dia_encerrado = 0;
+        int agente_atual = 0;
+        //std::cout << "cont priori: " << dados->microareas[microarea_atual].contador_prioritarios;
+    
+        if(dados->todos_servidos_microarea(agente_atual, 1) or dia->get_turno(agente_atual) == 3){
+            agente_atual++;
+        }
+
+        if(agente_atual == dados->microareas.size()){
+            flag_priori_servidos = 1;
+            break;
+        }
+         if(flag_priori_servidos){
             break;
         }
 
-        Rotas_diarias& dia_atual = dias[d];
-
-        for (int i = 0; i < num_microareas; i++) {
-            
-            // Armazena o tamanho uma única vez aqui para evitar casts e warnings de signed/unsigned
-            if (pos_cliente[i] >= filas_microareas[i].size()) {
-                continue;
-            }
-
-            bool trocou_turno_hoje = false;
-
-            // Agora o while roda de forma limpa, sem casts poluindo a condição
-            while (pos_cliente[i] < filas_microareas[i].size()) {
-
-                int id_cliente = filas_microareas[i][pos_cliente[i]];
-                
-                int ult_loc = dia_atual.ultimo_no_rota(i);
-                double tempo_viagem = dados->matriz_tempo[ult_loc][id_cliente];
-                double tempo_retorno = dados->matriz_tempo[id_cliente][deposito]; 
-
-                int status = dia_atual.adicionar_visita(id_cliente, i, tempo_viagem, tempo_retorno);
-
-                if (status == 0) {
-                    pos_cliente[i]++;
-                    cont_servidos++;
-                } else {
-                    if (!trocou_turno_hoje) {
-                        ult_loc = dia_atual.ultimo_no_rota(i);
-                        tempo_retorno = dados->matriz_tempo[ult_loc][deposito];
-                        dia_atual.troca_turno(i, tempo_retorno);
-                        trocou_turno_hoje = true; 
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            int ult_loc = dia_atual.ultimo_no_rota(i);
-            if(ult_loc != 0){
-                dia_atual.finaliza_turno(i, dados->matriz_tempo[ult_loc][deposito]);
-            }
+        if(dia->dia_encerrado()){
+            flag_dia_encerrado = 1;
         }
-    
-        si.adiciona_dia(dia_atual);
+
+        //o dia de todos os agentes encerrou
+        if(flag_dia_encerrado){
+            si.adiciona_dia(dias[cont_dias]);
+            cont_dias++;
+            dia = &(dias.at(cont_dias));
+            
+        }
+        //se todos os clientes prioritarios foram servidos 
+       
+        //sabendo qual foi a ultima casa visitada pelo agente
+        int ult_loc = dia->ultimo_no_rota(agente_atual);
+
+        int id = filas_microareas[agente_atual][0];
+        double dist_volta_posto = dados->matriz_tempo[id][0];
+        //std::std::cout << ult_loc << " e " << id << " = " << paciente_sorteado.second;
+        int retorno_adicionar = dia->adicionar_visita(id, agente_atual, dados->matriz_tempo[ult_loc][id], dist_volta_posto);
+        //se o retorno 1, 2 ou 3 significa que nao deu certo a inserção pq violaria o horario e o agente teve que retornar ao posto
+        if(retorno_adicionar > 0){
+            
+            ult_loc = dia->ultimo_no_rota(agente_atual);
+            dist_volta_posto = dados->matriz_tempo[ult_loc][0];
+            dia->troca_turno(agente_atual, dist_volta_posto);
+            continue;
+        }
+        
+        //adicionando que o paciente foi servido
+        dados->microareas[agente_atual].contador_prioritarios++;
+	}
+		
+    for (int i = 0; i < num_microareas; i++) {
+        //cout << dados->microareas[i].clientes_nao_prioritarios.size(); getchar();
+        filas_microareas[i] = gerar_ordem_vizinho_mais_proximo(dados->microareas[i].clientes_nao_prioritarios);
     }
-    
+
+    vector<pair<bool,int>>serviu_turno(dados->microareas.size(), {0,0});
+    bool flag_npriori_servidos = 0;
+    while(1){
+        int flag_dia_encerrado = 0;
+        int agente_atual = 0;
+        //std::cout << "cont priori: " << dados->microareas[microarea_atual].contador_prioritarios;
+        int ag = 0;
+        for (pair<bool,int>& i : serviu_turno) {
+            if(dados->todos_servidos_microarea(agente_atual, 0))
+                i.first = 1;
+            else
+                break;
+            ag++;
+        }
+
+        if(){
+            flag_npriori_servidos
+            break;
+        }
+
+        if(dia->get_turno(agente_atual) == 3){
+            agente_atual++ 
+        }
+
+        
+
+        if(dia->dia_encerrado() or dia->get_turno(agente_atual) == 3){
+            flag_dia_encerrado = 1;
+        }
+
+        //o dia de todos os agentes encerrou
+        if(flag_dia_encerrado){
+            si.adiciona_dia(dias[cont_dias]);
+            cont_dias++;
+            dia = &(dias.at(cont_dias));
+            
+        }
+        //se todos os clientes prioritarios foram servidos 
+       
+        //sabendo qual foi a ultima casa visitada pelo agente
+        int ult_loc = dia->ultimo_no_rota(agente_atual);
+
+        int id = filas_microareas[agente_atual][0];
+        double dist_volta_posto = dados->matriz_tempo[id][0];
+        //std::std::cout << ult_loc << " e " << id << " = " << paciente_sorteado.second;
+        int retorno_adicionar = dia->adicionar_visita(id, agente_atual, dados->matriz_tempo[ult_loc][id], dist_volta_posto);
+        //se o retorno 1, 2 ou 3 significa que nao deu certo a inserção pq violaria o horario e o agente teve que retornar ao posto
+        if(retorno_adicionar > 0){
+            
+            ult_loc = dia->ultimo_no_rota(agente_atual);
+            dist_volta_posto = dados->matriz_tempo[ult_loc][0];
+            dia->troca_turno(agente_atual, dist_volta_posto);
+            continue;
+        }
+        
+        //adicionando que o paciente foi servido
+        filas_microareas[agente_atual].erase(filas_microareas[agente_atual].begin());
+        dados->microareas[agente_atual].contador_nao_prioritarios++;
+        //cout << dados->microareas[agente_atual].contador_nao_prioritarios; getchar();
+	}
     si.calcula_fo();
     salvar_solucao_manual(si, nome_saida);
 

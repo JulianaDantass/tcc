@@ -6,8 +6,79 @@
 #include <vector>
 #include <algorithm> //Necessário para usar o std::replace
      
-Instancia::Instancia(){
+Instancia::Instancia(){    
+}
+
+
+int Instancia::ler_microareas(){
+
+   // Substitua "dados.csv" pelo nome real do seu arquivo
+    std::ifstream arquivo("instancias/microareas.csv");
     
+    if (!arquivo.is_open()) {
+        std::cerr << "Erro ao abrir o arquivo!" << std::endl;
+        return 1;
+    }
+
+    std::string linha;
+    std::string id_anterior = "";
+    std::string ultima_linha_conteudo = "";
+    int numero_linha = 0;
+    int ultima_linha_num = 0;
+    int microarea=0;
+    microareas.resize(numero_agentes);
+    
+    while (std::getline(arquivo, linha)) {
+        numero_linha++; // Incrementa no começo para registrar a linha exata
+
+        // Ignora linhas vazias
+        if (linha.empty()) continue;
+
+        // Usa stringstream para pegar o que está antes da primeira vírgula
+        std::stringstream ss(linha);
+        std::string id_atual;
+        std::getline(ss, id_atual, ','); // Lê até a primeira vírgula
+
+        // Ignora o ID "0" se necessário
+        if (id_atual == "0") {
+            //std::cout << "entrou" << std::endl;
+            continue;
+        }
+
+        // Se for a PRIMEIRA linha válida que estamos processando
+        if (id_anterior.empty()) {
+            microareas[microarea].primeiro_cliente = numero_linha;
+            id_anterior = id_atual;
+            continue; // Pula para a próxima iteração para não confundir com mudança de ID
+        }
+
+        // Se o ID mudou em relação ao anterior
+        if (id_atual != id_anterior) {
+            // A linha ANTERIOR foi o fim da microárea anterior
+            microareas[microarea].ultimo_cliente = numero_linha - 1;
+            
+            // Avança para a próxima microárea
+            microarea++;
+
+            // Verifica se já preencheu todas as microáreas desejadas
+            if (microarea >= numero_agentes) {
+                break;
+            }
+
+            // O a linha ATUAL é o início da nova microárea
+            microareas[microarea].primeiro_cliente = numero_linha;
+            
+            // Atualiza o id_anterior para o novo ID
+            id_anterior = id_atual;
+        }
+    }
+    microareas[0].primeiro_cliente = 1;
+    microareas[numero_agentes-1].ultimo_cliente = quantidade_clientes;
+    //cout << "tam: " <<  microareas.size();
+    arquivo.close();
+   
+
+    return 0;        
 }
 
 int Instancia::ler_instancia (string caminho){
@@ -20,135 +91,126 @@ int Instancia::ler_instancia (string caminho){
         cout << "Não foi possivel abrir o arquivo da instancia" << endl; 
         return -1;
     }
-
+    arquivo >> quantidade_clientes;
     arquivo >> numero_agentes;
     arquivo >> qtd_dias_planejamento;
     arquivo >> duracao_visita_h;
 
-    // Consome o '\n' restante na linha do duracao_h antes de usar getline
+    ler_microareas();
+
+    
+        // Consome o '\n' restante na linha do duracao_h antes de usar getline
     std::string linha;
     std::getline(arquivo, linha);
+	std::vector<bool> pacientes_priori(quantidade_clientes+1, false);
 
-    // 2. Leitura dos pacientes prioritários
-    if (std::getline(arquivo, linha)) {
+    for (int i = 0; i < numero_agentes; ++i) {
+        if (!std::getline(arquivo, linha)) break;
+
         std::stringstream ss(linha);
-        int id;
-        while (ss >> id) {
-            if(id == 0){
-                cout << "entrou aqui" << endl;
-                break;
+        std::vector<int> linha_ints;
+        int val_int;
+        
+        while (ss >> val_int) {
+            if(val_int != 0){
+            
+                microareas[i].clientes_prioritarios.push_back(val_int);
+                pacientes_priori[val_int] = true;
             }
-            clientes_prioritarios.push_back(id);
         }
     }
-    cout << "tam clientes priori: " << clientes_prioritarios.size() << endl;
-    // 3. Leitura da matriz (lê todas as linhas restantes até o fim do arquivo)
+    
+    
+    // 2. Leitura dos pacientes prioritários
     while (std::getline(arquivo, linha)) {
-        if (linha.empty()) continue;
+        if (linha.empty()) continue; 
 
         std::stringstream ss(linha);
-        std::vector<double> linha_matriz;
-        double val;
-        while (ss >> val) {
-            linha_matriz.push_back(val);
+        std::vector<double> linha_atual;
+
+        double valor;
+        while (ss >> valor) {
+            linha_atual.push_back(valor);
         }
-        
-        if (!linha_matriz.empty()) {
-            matriz_tempo.push_back(linha_matriz);
+
+        if (!linha_atual.empty()) {
+            matriz_tempo.push_back(linha_atual);
         }
     }
+    arquivo.close();
 
-    quantidade_clientes = matriz_tempo.size();
-    for(int i = 1; i < quantidade_clientes; i++) {
-        
-        if (std::find(clientes_prioritarios.begin(), clientes_prioritarios.end(), i) == clientes_prioritarios.end()) {
-            clientes_nao_prioritarios.push_back(i);
-        }
+    for(int i = 0; i < numero_agentes; i++) {
+        for(int j = microareas[i].primeiro_cliente; j <= microareas[i].ultimo_cliente; j++){
+            
+            int id = j;
+            if (pacientes_priori[id] == false) {
+                microareas[i].clientes_nao_prioritarios.push_back(id);
+            }
+        }        
     }
-
-    string m = "instancias/microareas.csv";
-    ler_csv(m);
+    
     return 0;
 }
 
-int Instancia::ler_csv(string caminho){
-    
-    std::ifstream arquivo(caminho);
-    std::string linha;
+int Instancia::todos_servidos_microarea(int m, int priori){
 
-    if (!arquivo.is_open()) {
-        std::cerr << "Erro .csv!\n";
-        return 1;
-    }
-
-    int deposito;
-    int cont = 1; 
-
-    while (getline(arquivo, linha)) {
-        if (linha.empty()) continue;
-
-        size_t pos = linha.find(',');
-        if (pos == string::npos) continue; // linha sem vírgula
-
-        
-        size_t primeira = linha.find(',');
-    
-        int id = stoi(linha.substr(0, primeira));
-        
-        if(id == 0){
-            deposito = id;
-            continue;
+    if(priori == 1){
+        //cout << "contador priori/ " << microareas[m].contador_prioritarios << "/" << microareas[m].clientes_prioritarios.size(); getchar();
+        if(microareas[m].contador_prioritarios == microareas[m].clientes_prioritarios.size()){
+            return 1;
+        }else{
+            return 0;
         }
+    }else{
+        if(microareas[m].contador_nao_prioritarios == microareas[m].clientes_nao_prioritarios.size()){
+            return 1;
+        }else{
+            return 0;
+        }
+    }
     
-        auto it = find_if(microareas.begin(), microareas.end(),[id](const Microarea& m) { return m.id == id; });
-
-        if (it != microareas.end()) {
-            it->clientes.push_back(cont);        // já existe: só adiciona o número
-        } else {
-            Microarea m;
-            m.id = id;
-            m.clientes.push_back(cont);
-            microareas.push_back(m); // não existe: cria a microárea
-        }
-        cont++;
-
-        
-    }
-    for(int i = 0; i < microareas.size(); i++){
-        std::cout << "id: " << microareas[i].id << endl;
-        
-        for(int j = 0; j < microareas[i].clientes.size(); j++){
-            std::cout << microareas[i].clientes[j] << " ";
-        }
-        std::cout << endl;
-    }
-    getchar();
-    return 0;        
 }
 
+void Instancia::zera(){
+    for(Microarea &i: microareas){
+        i.contador_nao_prioritarios = 0;
+        i.contador_prioritarios = 0;
+    }
+}
+
+
 void Instancia::exibir(){
+
     cout << "número de agentes: " << numero_agentes << endl;
     cout << "qtd total de dias de planejamento: " << qtd_dias_planejamento << endl;
     cout << "qtd clientes: " << quantidade_clientes << endl;
     cout << "duracao: " << duracao_visita_h << endl;
     cout << "exibindo lista de indices de clientes prioritarios:\n";
 
-    for (int i = 0; i < this->clientes_prioritarios.size(); i++) {
-        std::cout << clientes_prioritarios[i] << " ";
+    int microarea = 0;
+    for(Microarea i: microareas) {
+        cout << "microarea "  << microarea << endl;
+        cout << "primeiro cliente "  << i.primeiro_cliente << endl;
+        cout << "ultimo cliente "  << i.ultimo_cliente << endl;
+        cout << "prioritarios: ";
+        for(int j:i.clientes_prioritarios){
+            cout << j << " ";
+    
+        }        
+        cout << "\nn prioritarios: ";
+        for(int j:i.clientes_nao_prioritarios){
+            cout << j << " ";
+        }        
+        microarea++;
     }
-
-    cout << "\nexibindo lista de indices de clientes n prioritarios:\n";
-    for (int i = 0; i < this->clientes_nao_prioritarios.size(); i++) {
-        std::cout << clientes_nao_prioritarios[i] << " ";
-    }
-    cout<<endl;
+    
     /*
     cout << "\n exibindo a matriz de distancias: \n";
-    for (int i = 0; i < this->matriz_distancias.size(); i++) {
+    for (int i = 0; i < this->matriz_tempo.size(); i++) {
         cout << "------linha " << i+1 << ": " << endl;
         int k = 0;
-        for (int j = 0; j < this->matriz_distancias[i].size(); j++) {
-            std::cout << std::setw(6) << std::fixed << std::setprecision(3) << this->matriz_distancias[i][j];
+        for (int j = 0; j < this->matriz_tempo[i].size(); j++) {
+            std::cout << std::setw(6) << std::fixed << std::setprecision(3) << this->matriz_tempo[i][j];
             k++;
             if(k == 21){
                 cout << endl;
@@ -160,10 +222,3 @@ void Instancia::exibir(){
     */
 }
 
-int Instancia::todos_servidos_microarea(int m){
-    if(microareas[m].contador == microareas[m].clientes.size()){
-        return 1;
-    }else{
-        return 0;
-    }
-}

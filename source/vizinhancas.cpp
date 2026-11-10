@@ -15,8 +15,8 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
 
     bool houve_melhoria_rotas = 0;
     std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
-    double delta, 
-    melhor_delta = 0;                 
+    double delta = 0;
+    double melhor_delta = 0;                 
 
     int melhor_i, melhor_j, turno;       
     int melhor_a, melhor_d;
@@ -74,8 +74,6 @@ bool Vizinhancas::intra_reinsertion(Solucao &s){
     }
 
     if (melhor_delta < -dados->eps){
-
-        //tem que checar se essa posicao está certa
         //posicao da tarde
         if(turno == 2 ){
             dias[melhor_d].rotas[melhor_a].tempo_pm += melhor_delta;
@@ -174,7 +172,6 @@ bool Vizinhancas::intra_swap22(Solucao &s){
     }
 
     if (melhor_delta < -dados->eps){
-
         //cout << "intra swap 22" << endl;
         //cout << "melhor i: " << melhor_i << " / melhor j: " << melhor_j << endl;
         //cout << "rota antes: " << endl;
@@ -196,6 +193,7 @@ bool Vizinhancas::intra_swap22(Solucao &s){
         //cout << "rota dps: " << endl;
         //dias[melhor_d].printa_rota(melhor_a);
         //getchar();
+        houve_melhoria_rotas = 1;
         
     }
 
@@ -312,7 +310,7 @@ bool Vizinhancas::inter_shift10(Solucao &s){
         }
     }
     if (melhor_delta < -dados->eps){
-
+        
         vector<int>& rota1 = (turno_i == 1) ? dias[melhor_d].rotas[melhor_a].sequencia_am : dias[melhor_d].rotas[melhor_a].sequencia_pm;
         vector<int>& rota2 = (turno_j == 1) ? dias[melhor_e].rotas[melhor_b].sequencia_am : dias[melhor_e].rotas[melhor_b].sequencia_pm;
         
@@ -381,7 +379,7 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                 }
                 
                 //i representa o inicio do par do agente a e do dia d
-                for(int i = 1; i < rota1.size()-2; i++){
+                for(int i = 1; i < rota1.size()-3; i++){
 
                     //se o indice atual ou o próximo for a sede, nao pode 
                     if(rota1[i] == 0 or rota1[i+1] == 0){
@@ -402,7 +400,7 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                                 
                                 
                                 //j representa o inicio do par do agente b e do dia e
-                                for(int j = 1; j < rota2.size()-2; j++){
+                                for(int j = 1; j < rota2.size()-3; j++){
 
                                     //se o indice atual ou o próximo for a sede, nao pode 
                                     if(rota2[j] == 0 or rota2[j+1] == 0){
@@ -462,7 +460,6 @@ bool Vizinhancas::inter_swap22(Solucao &s){
     }
 
     if (melhor_delta < -dados->eps){
-
         //cout << endl << "melhor rota1: " << melhor_d << " " << melhor_a << endl;
         //cout << "melhor rota2: " << melhor_e << " " << melhor_b << endl;
         //cout << "melhor i: " << melhor_i << " no turno" << turno_i << endl;

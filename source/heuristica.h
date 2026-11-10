@@ -15,10 +15,7 @@ class Heuristica{
 		~Heuristica();
 		
 		void printa(Rota& r);
-		Solucao solucao_inicial();
-		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
-		void perturbacao(Solucao &s);
-		void RVND(Solucao &s);
+		
 		void ILS_RVND(std::string nome_saida);
 		
 		//DEBUG
@@ -27,7 +24,11 @@ class Heuristica{
 		void printa_solucao(Rota& r, int melhor_paciente, int melhor_posicao);
 
 	private:
-
+		Solucao solucao_inicial();
+		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
+		void perturbacao(Solucao &s);
+		void RVND(Solucao &s);
+		void reorganiza_ult_dia(Solucao &s);
 		std::random_device rd;
    	 	std::mt19937 gen{rd()};
 		Instancia *dados;
