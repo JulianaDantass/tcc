@@ -13,6 +13,7 @@ class Manual {
         Instancia* dados;
         std::string arquivo_entrada;
         std::string arquivo_saida;
+        vector<bool>inseridos;
         //std::vector<Microarea> microareas;
 
     public:
@@ -21,8 +22,9 @@ class Manual {
         // Métodos
         std::string trim(const std::string& str);
         //int ler_csv(string caminho);
+        bool atender_um (Rotas_diarias& dia, int a, bool prioritario);
         int gerar_solucao_manual(std::string nome_entrada, std::string nome_saida);
         int salvar_solucao_manual(Solucao &si, std::string nome_saida);
-        std::vector<int> gerar_ordem_vizinho_mais_proximo(const std::vector<int>& clientes_microarea);
+  
         void printa_microareas();
 };

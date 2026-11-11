@@ -32,5 +32,6 @@ class Instancia{
         void exibir();
         void zera();
         int todos_servidos_microarea(int microarea, int eh_priori);
+        
 };
 
