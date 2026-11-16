@@ -212,9 +212,9 @@ bool Vizinhancas::inter_shift10(Solucao &s){
     melhor_delta = 0, melhor_delta1, melhor_delta2;                 
 
     //vao guardar os indices de melhor troca
-    int melhor_i, melhor_j;       
-    int melhor_a, melhor_b, melhor_d, melhor_e;
-    int turno_i, turno_j;
+    int melhor_i = -1, melhor_j=-1;       
+    int melhor_a=-1, melhor_b=-1, melhor_d=-1, melhor_e=-1;
+    int turno_i=-1, turno_j=-1;
     
 
 	for(int d = 0; d < dias.size(); d++){   
@@ -251,8 +251,17 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                     }
 
                     for(int e = 0; e < dias.size(); e++){
+                        
+                        //se for um paciente prioritario e tá tentando colocar num dia que não é o primeiro, cancela
+                        if(dados->prioritarios[rota1[i]] == true and e > 0){
+                            continue;
+                        }
+                            
+                        
                         for(int b = 0; b < dias[e].rotas.size(); b++){
                             for(int t2 = 1; t2 <= 2; t2++){
+
+                                
 
                                 if(t2 == 2 and dias[e].rotas[b].sequencia_pm.size() == 0){
                                     continue;
@@ -263,10 +272,14 @@ bool Vizinhancas::inter_shift10(Solucao &s){
                                     continue;
                                 }
 
+                                
+
                                 const vector<int>& rota2 = (t2 == 1) ? dias[e].rotas[b].sequencia_am : dias[e].rotas[b].sequencia_pm;
 
+                                
                                 for(int j = 1; j < rota2.size(); j++){
 
+                                    
                                     double necessario2 = dados->duracao_visita_h  
                                                             -dados->matriz_tempo[rota2[j-1]][rota2[j]] 
                                                             +dados->matriz_tempo[rota2[j-1]][rota1[i]]
@@ -309,8 +322,8 @@ bool Vizinhancas::inter_shift10(Solucao &s){
             }
         }
     }
-    if (melhor_delta < -dados->eps){
-        
+    if (melhor_delta < -dados->eps and melhor_a != -1){
+
         vector<int>& rota1 = (turno_i == 1) ? dias[melhor_d].rotas[melhor_a].sequencia_am : dias[melhor_d].rotas[melhor_a].sequencia_pm;
         vector<int>& rota2 = (turno_j == 1) ? dias[melhor_e].rotas[melhor_b].sequencia_am : dias[melhor_e].rotas[melhor_b].sequencia_pm;
         
@@ -362,8 +375,8 @@ bool Vizinhancas::inter_swap22(Solucao &s){
     std::vector<Rotas_diarias>& dias = s.get_dias_planejamento();
     double delta, melhor_delta = 0;
     double melhor_delta1, melhor_delta2;                 
-    int melhor_i, melhor_j, turno_i, turno_j;       
-    int melhor_a, melhor_b, melhor_d, melhor_e;
+    int melhor_i=-1, melhor_j=-1, turno_i=-1, turno_j=-1;       
+    int melhor_a=-1, melhor_b=-1, melhor_d=-1, melhor_e=-1;
 
     
 
@@ -385,8 +398,13 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                     if(rota1[i] == 0 or rota1[i+1] == 0){
                         continue;
                     }
-
+                    
                     for(int e = 0; e < dias.size(); e++){
+
+                        if((dados->prioritarios[rota1[i]] == true or dados->prioritarios[rota1[i+1]] == true) and e > 0){
+                            continue;
+                        }
+
                         for(int b = 0; b < dias[e].rotas.size(); b++){
                             for(int t2 = 1; t2 <= 2; t2++){
 
@@ -401,6 +419,10 @@ bool Vizinhancas::inter_swap22(Solucao &s){
                                 
                                 //j representa o inicio do par do agente b e do dia e
                                 for(int j = 1; j < rota2.size()-3; j++){
+
+                                    if((dados->prioritarios[rota2[j]] or dados->prioritarios[rota2[j+1]])){
+                                        continue;
+                                    }
 
                                     //se o indice atual ou o próximo for a sede, nao pode 
                                     if(rota2[j] == 0 or rota2[j+1] == 0){
@@ -459,14 +481,14 @@ bool Vizinhancas::inter_swap22(Solucao &s){
         }
     }
 
-    if (melhor_delta < -dados->eps){
+    if (melhor_delta < -dados->eps and melhor_a != -1){
         //cout << endl << "melhor rota1: " << melhor_d << " " << melhor_a << endl;
         //cout << "melhor rota2: " << melhor_e << " " << melhor_b << endl;
         //cout << "melhor i: " << melhor_i << " no turno" << turno_i << endl;
         //cout << "melhor j: " << melhor_j << " no turno" << turno_j << endl;  
         //dias[melhor_d].printa_rota(melhor_a);
         //dias[melhor_e].printa_rota(melhor_b);
-
+        
         //debug
         vector<int>& rota1 = (turno_i == 1) ? dias[melhor_d].rotas[melhor_a].sequencia_am : dias[melhor_d].rotas[melhor_a].sequencia_pm;
         vector<int>& rota2 = (turno_j == 1) ? dias[melhor_e].rotas[melhor_b].sequencia_am : dias[melhor_e].rotas[melhor_b].sequencia_pm;

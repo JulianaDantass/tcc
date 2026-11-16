@@ -5,20 +5,19 @@
 #include "rota_diaria.h"
 #include "solucao.h"
 #include "instancia.h"
+//vizinho mais proximo
 
-
-class Manual {
+class Vpm {
     private:
         int deposito;
         Instancia* dados;
         std::string arquivo_entrada;
         std::string arquivo_saida;
-        vector<bool>inseridos;
         //std::vector<Microarea> microareas;
 
     public:
         // Construtores
-        Manual(Instancia *d);
+        Vpm(Instancia *d);
         // Métodos
         std::string trim(const std::string& str);
         //int ler_csv(string caminho);

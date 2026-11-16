@@ -25,6 +25,7 @@ class Heuristica{
 
 	private:
 		Solucao solucao_inicial();
+		bool atender_um (Rotas_diarias& dia, int ag, int m, bool prioritario); // essa é diferente da do manual
 		void busca_intra_rota(Solucao &s, Vizinhancas &mov);
 		void perturbacao(Solucao &s);
 		void RVND(Solucao &s);

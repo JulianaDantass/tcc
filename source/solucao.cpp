@@ -79,7 +79,7 @@ std::vector<Rotas_diarias> Solucao::get_dias_planejamento_estatico(){
     return dias_planejamento;
 }
 
-bool Solucao::salva_solucao_arquivo(std::string arq){
+bool Solucao::salva_solucao_arquivo(std::string arq, double tempo_ils, int melhor_iteracao, std::vector<bool>&priori){
 
     std::ofstream arquivo(arq);
  
@@ -88,10 +88,11 @@ bool Solucao::salva_solucao_arquivo(std::string arq){
         return false;
     }
 
-    
-    //arquivo << "\nPrioritários: "; 
-    //arquivo << "Total de não prioritários: " << n_priori.size() << std::endl;
-    std::cout << "qtd dias: " << dias_planejamento.size();
+    arquivo << "TEMPO TOTAL (h): " << this->funcao_objetivo/60.0 << std::endl;
+    arquivo << "TEMPO ILS (s): " << tempo_ils << std::endl; 
+    //arquivo << "MÈDIA DE TEMPO RVND+PERT (s): " << media_rvnd << std::endl;
+    arquivo << "MELHOR ITERAÇÃO: " << melhor_iteracao    << std::endl;
+    arquivo << "\n obs.: os clientes prioritários estão entre parenteses\n"; 
     std::vector<double>horas(dias_planejamento[0].rotas.size(), 0); 
     for(int i=0; i < dias_planejamento.size(); i++){
         arquivo << "DIA " << i+1 << ":\n";
@@ -103,17 +104,21 @@ bool Solucao::salva_solucao_arquivo(std::string arq){
             arquivo << "manhã: ";
             for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia_am.size(); k++){
                 
-                arquivo << dias_planejamento[i].rotas[j].sequencia_am[k] << ", ";
-               
+                int id = dias_planejamento[i].rotas[j].sequencia_am[k];
+                if(priori[id] == true)
+                    arquivo << "(" << id << "), ";
+                else
+                    arquivo << id << ", ";
             }
-            
-            
             
             arquivo << "\n           tarde: ";
             for(int k = 0; k < dias_planejamento[i].rotas[j].sequencia_pm.size(); k++){
                 
-                arquivo << dias_planejamento[i].rotas[j].sequencia_pm[k] << ", ";
-               
+                int id = dias_planejamento[i].rotas[j].sequencia_pm[k];
+                if(priori[id] == true)
+                    arquivo << "(" << id << "), ";
+                else
+                    arquivo << id << ", ";
             }
             horas[j] += dias_planejamento[i].rotas[j].tempo_am + dias_planejamento[i].rotas[j].tempo_pm;
             arquivo << std::endl;
@@ -130,9 +135,9 @@ bool Solucao::salva_solucao_arquivo(std::string arq){
     if(qtd_dias % 2 > 0){
         qtd_semanas++;
     }
-    arquivo << "FORAM NECESSARIOS EM SEMANAS (considerando que há 2 dias de visita): " << qtd_semanas << "\n";
-    arquivo << "FORAM NECESSARIOS EM DIAS: " << (dias_planejamento.size()) << std::endl;
-    arquivo << "TEMPO TOTAL (HORAS): " << this->funcao_objetivo/60.0 << std::endl; 
+    arquivo << "SEMANAS (considerando que há 2 dias de visita): " << qtd_semanas << "\n";
+    arquivo << "DIAS: " << (dias_planejamento.size()) << std::endl;
+    
     
     arquivo.close();
 }

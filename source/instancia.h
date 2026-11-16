@@ -24,6 +24,8 @@ class Instancia{
         int qtd_dias_planejamento;
         double duracao_visita_h; 
         vector<vector<double>> matriz_tempo;
+        vector<bool>inseridos;
+        vector<bool>prioritarios;
         int quantidade_clientes; 
         std::vector<Microarea> microareas;
         Instancia();

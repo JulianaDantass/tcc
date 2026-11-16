@@ -24,6 +24,6 @@ class Solucao{
 
         double calcula_fo();
         double get_fo() const;
-        bool salva_solucao_arquivo(std::string nome);
+        bool salva_solucao_arquivo(std::string nome, double tempo_ils, int melhor_iteracao, std::vector<bool>&priori);
 };
 

@@ -102,7 +102,11 @@ int Instancia::ler_instancia (string caminho){
         // Consome o '\n' restante na linha do duracao_h antes de usar getline
     std::string linha;
     std::getline(arquivo, linha);
-	std::vector<bool> pacientes_priori(quantidade_clientes+1, false);
+	
+    inseridos.resize(quantidade_clientes+1);
+    prioritarios.resize(quantidade_clientes+1);
+    std::fill(inseridos.begin(), inseridos.end(), false);
+    std::fill(prioritarios.begin(), prioritarios.end(), false);
 
     for (int i = 0; i < numero_agentes; ++i) {
         if (!std::getline(arquivo, linha)) break;
@@ -115,7 +119,7 @@ int Instancia::ler_instancia (string caminho){
             if(val_int != 0){
             
                 microareas[i].clientes_prioritarios.push_back(val_int);
-                pacientes_priori[val_int] = true;
+                prioritarios[val_int] = true;
             }
         }
     }
@@ -143,7 +147,7 @@ int Instancia::ler_instancia (string caminho){
         for(int j = microareas[i].primeiro_cliente; j <= microareas[i].ultimo_cliente; j++){
             
             int id = j;
-            if (pacientes_priori[id] == false) {
+            if (prioritarios[id] == false) {
                 microareas[i].clientes_nao_prioritarios.push_back(id);
             }
         }        
@@ -185,8 +189,9 @@ void Instancia::exibir(){
     cout << "qtd total de dias de planejamento: " << qtd_dias_planejamento << endl;
     cout << "qtd clientes: " << quantidade_clientes << endl;
     cout << "duracao: " << duracao_visita_h << endl;
-    cout << "exibindo lista de indices de clientes prioritarios:\n";
+    
 
+    /*
     int microarea = 0;
     for(Microarea i: microareas) {
         cout << "microarea "  << microarea << endl;
@@ -203,12 +208,20 @@ void Instancia::exibir(){
         }        
         microarea++;
     }
-    
-    /*
+    */
+   cout << "exibindo clientes prioritarios:\n";
+    for(int j=0; j < prioritarios.size(); j++){
+        if(prioritarios[j] == true){
+            cout << j << " ";
+        }
+    }        
+    cout << endl;
+    /*    
     cout << "\n exibindo a matriz de distancias: \n";
     for (int i = 0; i < this->matriz_tempo.size(); i++) {
         cout << "------linha " << i+1 << ": " << endl;
         int k = 0;
+
         for (int j = 0; j < this->matriz_tempo[i].size(); j++) {
             std::cout << std::setw(6) << std::fixed << std::setprecision(3) << this->matriz_tempo[i][j];
             k++;
@@ -218,6 +231,7 @@ void Instancia::exibir(){
             }
         }
         cout << endl;
+        
     }
     */
 }
